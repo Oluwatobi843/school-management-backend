@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { User } from './auth/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -13,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
     username: 'postgres',
     password: 'root',
     database: 'school-mgt',
-    entities: [], // Array of entities i entered 
+    entities: [User ], // Array of entities i entered 
     synchronize: true 
 
 
