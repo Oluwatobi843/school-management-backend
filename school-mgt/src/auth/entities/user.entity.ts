@@ -1,5 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { CreateDateColumn } from "typeorm/browser";
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
+
 
 
 export enum UserRole {
@@ -34,6 +40,8 @@ export class User {
     enum: UserRole,
     default: UserRole.STUDENT,
   })
+
+  role!: UserRole;
 
   @Column({ default: true})
   isActive!: boolean;
