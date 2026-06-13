@@ -14,7 +14,7 @@ import { User } from './auth/entities/user.entity';
     username: 'postgres',
     password: 'root',
     database: 'school-mgt',
-    entities: [User ], // Array of entities i entered 
+    entities: [User], // Array of entities i entered 
     synchronize: true 
 
 
