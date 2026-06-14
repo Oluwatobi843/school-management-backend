@@ -4,12 +4,15 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepo : Repository<User>
+    private readonly userRepo : Repository<User>,
+    private readonly JwtService: JwtService,
   ){}
 
 
@@ -37,5 +40,40 @@ export class AuthService {
 
     // 4. save to database
     return this.userRepo.save(user)
+  }
+
+
+
+  async login(dto: LoginDto){
+    // 1. Find user
+    const user = await this.userRepo.findOne({
+      where: {email: dto.email},
+    });
+
+    if(!user) {
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    // Compare Password
+    const isMatch = await bcrypt.compare(dto.password, user.password)
+
+    if(!isMatch){
+      throw new BadRequestException('Invalid credentials');
+    }
+
+    // 3. Generate JWT token
+    const token = this.JwtService.sign({
+      id: user.id,
+      email: user.email,
+      role: user.role
+    });
+
+    const {password, ...safeUser} = user
+
+    return {
+      message: 'Login successfull',
+      acces_token: token,
+      user: safeUser,
+    }
   }
 }
