@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo : Repository<User>,
-    private readonly JwtService: JwtService,
+    private readonly jwtService: JwtService,
   ){}
 
 
@@ -62,7 +62,7 @@ export class AuthService {
     }
 
     // 3. Generate JWT token
-    const token = this.JwtService.sign({
+    const token = this.jwtService.sign({
       id: user.id,
       email: user.email,
       role: user.role
@@ -72,8 +72,24 @@ export class AuthService {
 
     return {
       message: 'Login successfull',
-      acces_token: token,
+      access_token: token,
       user: safeUser,
     }
+  }
+
+  // Find user by ID
+  async getUserById(userId: number){
+    const user = await this.userRepo.findOne({
+      where: {id: userId}
+    })
+
+    if(!user){
+      throw new UnauthorizedException('User not found')
+
+    }
+
+    const {password, ...result} = user;
+
+    return result
   }
 }

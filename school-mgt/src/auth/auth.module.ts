@@ -3,13 +3,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   
   imports: [TypeOrmModule.forFeature([User]),
         JwtModule.register({
-          secret: 'superSecretkey',// 
+          secret: 'jwt_secret',// 
           signOptions: { expiresIn: '1d'}
         }),
 
@@ -17,6 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
 ],
 
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService, JwtStrategy]
 })
 export class AuthModule {}
