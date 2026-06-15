@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +40,26 @@ export class AuthService {
     });
 
     // 4. save to database
-    return this.userRepo.save(user)
+    const savedUser = await this.userRepo.save(user);
+
+    
+    // 5. Genrate Jwt
+    const token = this.jwtService.sign({
+      sub: savedUser.id,
+      email: savedUser.email,
+      role: savedUser.role
+    });
+
+    //6. Remove password from response
+    const {password, ...safeUser} = savedUser;
+
+
+    //7. Return response
+    return {
+      message: 'Registration successfull',
+      access_token: token,
+      user: safeUser
+    }
   }
 
 
@@ -51,19 +71,19 @@ export class AuthService {
     });
 
     if(!user) {
-      throw new BadRequestException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // Compare Password
     const isMatch = await bcrypt.compare(dto.password, user.password)
 
     if(!isMatch){
-      throw new BadRequestException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // 3. Generate JWT token
     const token = this.jwtService.sign({
-      id: user.id,
+      sub: user.id,
       email: user.email,
       role: user.role
     });
@@ -91,5 +111,44 @@ export class AuthService {
     const {password, ...result} = user;
 
     return result
+  }
+
+  async updateProfile(userId: number, dto: UpdateProfileDto){
+    const user = await this.userRepo.findOne({
+      where: { id: userId},
+    });
+
+    if(!user){
+      throw new UnauthorizedException('User not found');
+    }
+
+    //  Check if email is changing
+    if(dto.email && dto.email !== user.email){
+      const existing = await this.userRepo.findOne({
+        where: { email: dto.email},
+      });
+
+       if (existing) {
+        throw new BadRequestException('Email already exist');
+       }
+    }
+
+    // Hash new password if provided
+    if(dto.password){
+      dto.password = await bcrypt.hash(dto.password, 10)
+    }
+
+    // Update allow field
+    Object.assign(user, dto);
+
+    const updatedUser = await this.userRepo.save(user);
+
+    const {password, ...safeUser} = updatedUser;
+
+    return{
+      message: 'Profile updated successfully',
+      user: safeUser
+    }
+   
   }
 }

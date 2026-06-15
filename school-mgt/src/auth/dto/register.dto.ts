@@ -1,16 +1,16 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MaxLength, MinLength, minLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 import { UserRole } from "../entities/user.entity";
 
 
 export class RegisterDto {
-  @IsString({ message: 'firstName mustbe a string' })
+  @IsString({ message: 'firstName must be a string' })
   @IsNotEmpty({ message: 'firstName is required! Please provide firstName' })
   @MinLength(3, { message: 'firstName must at least 3 characters long' })
   @MaxLength(50, { message: 'FirstName must not be longer than 50 characters' })
   firstName!: string;
 
-  @IsString({ message: 'lastName mustbe a string' })
-  @IsNotEmpty({ message: 'lastName is required! Please provide firstName' })
+  @IsString({ message: 'lastName must be a string' })
+  @IsNotEmpty({ message: 'lastName is required! Please provide lastName' })
   @MinLength(3, { message: 'lastName must at least 3 characters long' })
   @MaxLength(50, { message: 'lastName must not be longer than 50 characters' })
   lastName!: string;
@@ -23,5 +23,5 @@ export class RegisterDto {
   password!: string;
 
   @IsEnum(UserRole)
-  role!: UserRole;
+  role!: UserRole.STUDENT;
 }
