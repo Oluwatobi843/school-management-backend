@@ -3,9 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { User } from './auth/entities/user.entity';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './auth/guards/roles.guard';
+
 import { StudentModule } from './student/student.module';
 
 @Module({
@@ -17,11 +15,14 @@ import { StudentModule } from './student/student.module';
     username: 'postgres',
     password: 'root',
     database: 'school-mgt',
-    entities: [User], // Array of entities i entered 
-    synchronize: true 
 
+    autoLoadEntities: true,
+   
+    synchronize: true    
+ 
 
-  }), AuthModule, StudentModule
+  }), AuthModule, 
+  StudentModule,
    
 
   ],

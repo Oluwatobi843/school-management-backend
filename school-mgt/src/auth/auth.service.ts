@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -17,8 +21,26 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  
+  // Helper function
+  
+  private sanitizeUser(user: User) {
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
+
+  private signToken(user: User) {
+    return this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+  }
+
+  
+  // REGISTER
+  
   async register(dto: RegisterDto) {
-    // 1 check if user exists
     const existing = await this.userRepo.findOne({
       where: { email: dto.email },
     });
@@ -27,41 +49,27 @@ export class AuthService {
       throw new BadRequestException('Email already exists');
     }
 
-    // 2 Hash Password
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // 3 create user
     const user = this.userRepo.create({
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      email: dto.email,
+      ...dto,
       password: hashedPassword,
-      role: dto.role,
     });
 
-    // 4. save to database
     const savedUser = await this.userRepo.save(user);
+    const token = this.signToken(savedUser);
 
-    // 5. Genrate Jwt
-    const token = this.jwtService.sign({
-      sub: savedUser.id,
-      email: savedUser.email,
-      role: savedUser.role,
-    });
-
-    //6. Remove password from response
-    const { password, ...safeUser } = savedUser;
-
-    //7. Return response
     return {
-      message: 'Registration successfull',
+      message: 'Registration successful',
       access_token: token,
-      user: safeUser,
+      user: this.sanitizeUser(savedUser),
     };
   }
 
+  
+  // LOGIN
+  
   async login(dto: LoginDto) {
-    // 1. Find user
     const user = await this.userRepo.findOne({
       where: { email: dto.email },
     });
@@ -70,30 +78,26 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Compare Password
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is disabled');
+    }
+
     const isMatch = await bcrypt.compare(dto.password, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 3. Generate JWT token
-    const token = this.jwtService.sign({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    const { password, ...safeUser } = user;
-
     return {
-      message: 'Login successfull',
-      access_token: token,
-      user: safeUser,
+      message: 'Login successful',
+      access_token: this.signToken(user),
+      user: this.sanitizeUser(user),
     };
   }
 
-  // Find user by ID
+  
+  // GET USER BY ID
+  
   async getUserById(userId: number) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
@@ -103,11 +107,12 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const { password, ...result } = user;
-
-    return result;
+    return this.sanitizeUser(user);
   }
 
+  
+  // UPDATE PROFILE
+  
   async updateProfile(userId: number, dto: UpdateProfileDto) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
@@ -117,34 +122,34 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    //  Check if email is changing
     if (dto.email && dto.email !== user.email) {
       const existing = await this.userRepo.findOne({
         where: { email: dto.email },
       });
 
       if (existing) {
-        throw new BadRequestException('Email already exist');
+        throw new BadRequestException('Email already exists');
       }
     }
 
-    // Hash new password if provided
+    const updateData: Partial<User> = { ...dto };
+
     if (dto.password) {
-      dto.password = await bcrypt.hash(dto.password, 10);
+      updateData.password = await bcrypt.hash(dto.password, 10);
     }
 
-    // Update allow field
-    Object.assign(user, dto);
+    Object.assign(user, updateData);
 
     const updatedUser = await this.userRepo.save(user);
 
-    const { password, ...safeUser } = updatedUser;
-
     return {
       message: 'Profile updated successfully',
-      user: safeUser,
+      user: this.sanitizeUser(updatedUser),
     };
   }
+
+  
+  // CHANGE PASSWORD
 
   async changePassword(userId: number, dto: ChangePasswordDto) {
     const user = await this.userRepo.findOne({
@@ -155,18 +160,16 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    // 1. Check current password
-    const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
+    const isMatch = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
 
     if (!isMatch) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
-    // 2. Hash new password
-    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
-
-    // 3. Update password
-    user.password = hashedPassword;
+    user.password = await bcrypt.hash(dto.newPassword, 10);
 
     await this.userRepo.save(user);
 
