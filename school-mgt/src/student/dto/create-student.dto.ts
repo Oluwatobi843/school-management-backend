@@ -3,6 +3,10 @@ import {  IsDateString, IsEmail, IsEnum, IsOptional, IsString, Matches, MinLengt
 
 
 export class CreateStudentDto {
+
+
+
+
     @IsString()
     @MinLength(3)
     admissionNumber!: string;
@@ -17,6 +21,10 @@ export class CreateStudentDto {
 
     @IsEmail()
     email!: string;
+
+    @IsString()
+    @MinLength(10)
+    password!: string;
 
     @IsEnum(['Male', 'Female'],{
         message: 'Gender must be either Male or Female',

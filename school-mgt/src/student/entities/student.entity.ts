@@ -1,10 +1,21 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "src/auth/entities/user.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
 
 
 @Entity('students')
 export class Student{
+
+    // Relationship with User entity
+    @OneToOne(() => User)
+    @JoinColumn()
+    user!: User;
+
+    // Add userID column
+    @Column()
+    userId!: number;
+
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -40,4 +51,6 @@ export class Student{
 
     @UpdateDateColumn()
     updatedAt!: Date;
+
+
 }
