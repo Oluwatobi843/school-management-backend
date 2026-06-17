@@ -27,6 +27,13 @@ export class StudentController {
     return this.studentService.findAll();
   }
 
+  @Get('admission/:admissionNumber')
+findByAdmissionNumber(
+  @Param('admissionNumber') admissionNumber: string,
+) {
+  return this.studentService.findByAdmissionNumber(admissionNumber);
+}
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.studentService.findOne(id);

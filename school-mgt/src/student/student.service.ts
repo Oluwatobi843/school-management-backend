@@ -32,6 +32,12 @@ export class StudentService {
     }
  }
 
+// GET STUDENT BY ADMISSION 
+ async findByAdmissionNumber(admissionNumber: string) {
+  return this.studentRepository.findOne({
+    where: { admissionNumber },
+  });
+}
 
 //  GET STUDENT BY ID
 async findOne(id: number){
