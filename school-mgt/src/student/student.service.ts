@@ -2,14 +2,16 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { Student } from './entities/student.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { User } from 'src/auth/entities/user.entity';
+import { User, UserRole } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class StudentService {
@@ -22,17 +24,26 @@ export class StudentService {
   ) {}
 
   //  CREATE STUDENT 
-  async create(dto: CreateStudentDto, userId: number) {
-    // 1. Check if user exists (from Auth/JWT)
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
+  async create(dto: CreateStudentDto, adminId: number) {
+    // check admin exists
+    const admin = await this.userRepository.findOne({
+      where: { id: adminId },
     });
 
-    if (!user) {
-      throw new BadRequestException('User not found');
+    if (!admin) {
+      throw new BadRequestException('Admin user not found');
     }
 
-    // 2. Prevent duplicate admission number
+    // check email
+    const existingUser = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    // check admission number
     const existingStudent = await this.studentRepository.findOne({
       where: { admissionNumber: dto.admissionNumber },
     });
@@ -41,7 +52,21 @@ export class StudentService {
       throw new BadRequestException('Admission number already exists');
     }
 
-    // 3. Create student linked to user
+    // hash password
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    // create USER (auth account)
+    const studentUser = this.userRepository.create({
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      email: dto.email,
+      password: hashedPassword,
+      role: UserRole.STUDENT,
+    });
+
+    const savedUser = await this.userRepository.save(studentUser);
+
+    // create STUDENT (profile)
     const student = this.studentRepository.create({
       admissionNumber: dto.admissionNumber,
       gender: dto.gender,
@@ -49,7 +74,7 @@ export class StudentService {
       className: dto.className,
       phoneNumber: dto.phoneNumber,
       address: dto.address,
-      user: user, // 👈 relation link (important)
+      user: savedUser,
     });
 
     const savedStudent = await this.studentRepository.save(student);
@@ -63,9 +88,7 @@ export class StudentService {
   //  GET ALL STUDENTS 
   async findAll() {
     const students = await this.studentRepository.find({
-      relations: {
-        user: true,
-      },
+      relations: { user: true },
     });
 
     return {
@@ -74,27 +97,15 @@ export class StudentService {
     };
   }
 
-  //  GET BY ADMISSION NUMBER
+  //  GET BY ADMISSION 
   async findByAdmissionNumber(admissionNumber: string) {
-    return this.studentRepository.findOne({
-      where: { admissionNumber },
-      relations: {
-        user: true,
-      },
-    });
-  }
-
-  //  GET ONE STUDENT 
-  async findOne(id: number) {
     const student = await this.studentRepository.findOne({
-      where: { id },
-      relations: {
-        user: true,
-      },
+      where: { admissionNumber },
+      relations: { user: true },
     });
 
     if (!student) {
-      throw new NotFoundException(`Student with ID ${id} not found`);
+      throw new NotFoundException('Student not found');
     }
 
     return {
@@ -103,28 +114,58 @@ export class StudentService {
     };
   }
 
-  //  UPDATE STUDENT 
-  async update(id: number, dto: UpdateStudentDto) {
-    const student = await this.studentRepository.findOneBy({ id });
+  //  GET ONE (ROLE PROTECTED) 
+  async findOne(id: number, currentUser: any) {
+    const student = await this.studentRepository.findOne({
+      where: { id },
+      relations: { user: true },
+    });
 
     if (!student) {
       throw new NotFoundException(`Student with ID ${id} not found`);
     }
 
-    const updatedStudent = await this.studentRepository.save({
-      ...student,
-      ...dto,
-    });
+    // STUDENT CAN ONLY SEE OWN PROFILE
+    if (
+      currentUser.role === UserRole.STUDENT &&
+      student.user.id !== currentUser.id
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to access this student profile',
+      );
+    }
 
     return {
-      message: 'Student updated successfully',
-      data: updatedStudent,
+      message: 'Student retrieved successfully',
+      data: student,
     };
   }
 
-  //  DELETE STUDENT 
+  //  UPDATE 
+  async update(id: number, dto: UpdateStudentDto) {
+    const student = await this.studentRepository.findOne({
+      where: { id },
+    });
+
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
+
+    Object.assign(student, dto);
+
+    const updated = await this.studentRepository.save(student);
+
+    return {
+      message: 'Student updated successfully',
+      data: updated,
+    };
+  }
+
+  //  DELETE 
   async remove(id: number) {
-    const student = await this.studentRepository.findOneBy({ id });
+    const student = await this.studentRepository.findOne({
+      where: { id },
+    });
 
     if (!student) {
       throw new NotFoundException(`Student with ID ${id} not found`);

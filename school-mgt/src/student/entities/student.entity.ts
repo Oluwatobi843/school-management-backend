@@ -1,56 +1,46 @@
-import { User } from "src/auth/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-
-
+import { User } from 'src/auth/entities/user.entity';
 
 @Entity('students')
-export class Student{
+export class Student {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    // Relationship with User entity
-    @OneToOne(() => User)
-    @JoinColumn()
-    user!: User;
+  @Column({ unique: true })
+  admissionNumber!: string;
 
-    // Add userID column
-    @Column()
-    userId!: number;
+  @Column()
+  gender!: string;
 
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @Column({ type: 'date' })
+  dateOfBirth!: Date;
 
-    @Column({ unique: true })
-    admissionNumber!: string;
+  @Column()
+  className!: string;
 
-    @Column()
-    firstName!: string;
+  @Column({ nullable: true })
+  phoneNumber!: string;
 
-    @Column()
-    lastName!: string;
+  @Column({ nullable: true })
+  address!: string;
 
-    @Column({ unique: true})
-    email!: string;
+  //  RELATION ONLY (NO manual userId column)
+  @OneToOne(() => User, { eager: true })
+  @JoinColumn()
+  user!: User;
 
-    @Column()
-    gender!: string;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-    @Column({ type: 'date'})
-    dateOfBirth!: Date;
-
-    @Column()
-    className!: string;
-
-    @Column({ nullable: true})
-    phoneNumber!: string;
-
-    @Column({ nullable: true})
-    address!: string;
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn()
-    updatedAt!: Date;
-
-
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

@@ -10,23 +10,26 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService){}
 
+  // Public routes
   @Post('register')
   register(@Body() dto: RegisterDto){
     return this.authService.register(dto)
   }
 
-  @UseGuards()
+  // Public routes
   @Post('login')
   login(@Body() dto: LoginDto){
     return this.authService.login(dto)
   }
 
+  // Protected routes
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req:any){
-    return this.authService.getUserById(req.user.id)
+    return this.authService.getUserById(req.user.id )
   }
 
+  // Protected routes
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   updateProfile(
@@ -37,6 +40,7 @@ export class AuthController {
   }
 
 
+  // Protected routes
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
   changePassword(
