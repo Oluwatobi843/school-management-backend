@@ -1,14 +1,21 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { AuthService } from "../auth.service";
-import { ExtractJwt, Strategy } from "passport-jwt";
+import {
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { AuthService } from '../auth.service';
+import { UserRole } from '../entities/user.entity';
 
-
-
+export interface JwtPayload {
+  sub: number;
+  email: string;
+  role: UserRole;
+}
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy){
-  constructor(private authService : AuthService){
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(private authService: AuthService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -16,21 +23,19 @@ export class JwtStrategy extends PassportStrategy(Strategy){
     });
   }
 
+  async validate(payload: JwtPayload) {
+    const user = await this.authService.getUserById(payload.sub);
 
-  async validate(payload: any){
-    try {
-      const user = await this.authService.getUserById(payload.sub)
-
-      return{
-        id: user.id,
-        role: user.role,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-
-      }
-    } catch (error) {
-      throw new UnauthorizedException('Invalid token')
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
+
+    return {
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
   }
 }
