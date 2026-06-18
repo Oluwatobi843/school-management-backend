@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { StudentService } from './student.service';
@@ -39,8 +40,12 @@ export class StudentController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @role(UserRole.ADMIN, UserRole.TEACHER)
   @Get()
-  findAll() {
-    return this.studentService.findAll();
+  findAll(@Query('page') page: string, 
+    @Query('limit') limit: string) {
+    return this.studentService.findAll(
+       Number(page) || 1,
+    Number(limit) || 10,
+    );
   }
 
   // GET STUDENT BY ADMISSION NUMBER
