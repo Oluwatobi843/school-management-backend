@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 
 import { StudentModule } from './student/student.module';
+import { TeachersModule } from './teachers/teachers.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -22,7 +23,7 @@ import { StudentModule } from './student/student.module';
  
 
   }), AuthModule, 
-  StudentModule,
+  StudentModule, TeachersModule,
    
 
   ],
