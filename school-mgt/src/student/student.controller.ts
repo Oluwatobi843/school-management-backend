@@ -20,6 +20,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { role } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/auth/entities/user.entity';
 
+@UseGuards(JwtAuthGuard)
 @Controller('students')
 export class StudentController {
   constructor(private readonly studentService: StudentService) {}
@@ -32,7 +33,7 @@ export class StudentController {
     @Body() dto: CreateStudentDto,
     @Req() req: any,
   ) {
-    return this.studentService.create(dto, req.user.id);
+    return this.studentService.create(dto, req.user.sub);
   }
 
   // GET ALL STUDENTS (ADMIN + TEACHER)

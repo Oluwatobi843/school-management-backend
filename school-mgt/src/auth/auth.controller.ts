@@ -26,7 +26,7 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req:any){
-    return this.authService.getUserById(req.user.id )
+    return this.authService.getUserById(req.user.sub )
   }
 
   // Protected routes
@@ -36,7 +36,7 @@ export class AuthController {
     @Req() req: any,
     @Body() dto: UpdateProfileDto
   ){
-    return this.authService.updateProfile(req.user.id, dto)
+    return this.authService.updateProfile(req.user.sub, dto)
   }
 
 
