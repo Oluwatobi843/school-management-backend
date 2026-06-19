@@ -23,7 +23,7 @@ export class TeachersController {
     // Get a teacher by ID
     @Get(':id')
     findOne(@Param('id') id: string){
-        return this.teachersService.findOne(+id)
+        return this.teachersService.findOne(Number(id))
     }
 
 
