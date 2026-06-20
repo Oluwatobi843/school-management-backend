@@ -33,6 +33,7 @@ export class Teacher {
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
+  
   @Column()
   phone!: string;
 
