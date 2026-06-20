@@ -1,47 +1,59 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-
-
-
-
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from '../../auth/entities/user.entity';
 
 @Entity('teachers')
 export class Teacher {
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Column({unique: true})
-    employeeId!: string;
+  @Column({ unique: true })
+  employeeId!: string;
 
-     @Column()
-    firstName!: string;
+  @OneToOne(() => User, { eager: true })
+  @JoinColumn()
+  user!: User;
 
-    @Column()
-    lastName!: string;
+  @Column()
+  firstName!: string;
 
-     @Column({ unique: true })
-     email!: string;
+  @Column()
+  lastName!: string;
 
-     @Column()
-     phoneNumber!: string;
+  @Column()
+  gender!: string;
 
-    @Column()
-    gender!: string;
+  @Column({ type: 'date' })
+  dateOfBirth!: Date;
 
-    @Column({ nullable: true })
-    qualification!: string;
+  @Column()
+  phone!: string;
 
-    @Column({ nullable: true })
-    specialization!: string;
+  @Column()
+  qualification!: string;
 
-    @Column({ type: 'date' })
-    hireDate!: Date;
+  @Column()
+  specialization!: string;
 
-    @Column({ default: true })
-    isActive!: boolean;
+  @Column({ type: 'date' })
+  hireDate!: Date;
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @Column({ nullable: true })
+  address!: string;
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @Column({ default: true })
+  isActive!: boolean;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }
