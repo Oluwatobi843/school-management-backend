@@ -34,7 +34,7 @@ profileImage?: string;
   @IsEmail()
   email!: string;
 
-  @IsPhoneNumber()
+  @IsPhoneNumber('NG')
   phoneNumber!: string;
 
   @IsOptional()
