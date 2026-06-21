@@ -10,11 +10,11 @@ import {
 
 export class CreateTeacherDto {
   @IsString()
-  @Length(3, 20)
+  @Length(3, 55)
   employeeId!: string;
 
   @IsString()
-  @Length(2, 50)
+  @Length(2, 55)
   firstName!: string;
 
   @IsString()
