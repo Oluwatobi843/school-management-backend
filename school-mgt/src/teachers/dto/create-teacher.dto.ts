@@ -1,32 +1,58 @@
-import { IsDateString, IsEmail, IsOptional, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsDateString,
+  IsEmail,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  Length,
+} from 'class-validator';
 
 export class CreateTeacherDto {
-    @IsString()
-    employeeId!: string;
+  @IsString()
+  @Length(3, 20)
+  employeeId!: string;
 
-    @IsString()
-    firstName!: string;
+  @IsString()
+  @Length(2, 50)
+  firstName!: string;
 
-    @IsString()
-    lastName!: string;
+  @IsString()
+  @Length(2, 50)
+  lastName!: string;
 
-    @IsEmail()
-    email!: string;
+  @IsString()
+  gender!: string;
 
-     @IsString()
-    phoneNumber!: string;
+  @IsDateString()
+  dateOfBirth!: Date;
 
-    @IsString()
-    gender!: string;
+  @IsOptional()
+@IsString()
+profileImage?: string;
 
-    @IsOptional()
-    @IsString()
-    qualification?: string;
+  @IsEmail()
+  email!: string;
 
-    @IsOptional()
-    @IsString()
-    specialization?: string;
+  @IsPhoneNumber('NG')
+  phoneNumber!: string;
 
-    @IsDateString()
-    hireDate!: Date;
+  @IsOptional()
+  @IsString()
+   address?: string;
+
+  @IsOptional()
+  @IsString()
+  qualification?: string;
+
+  @IsOptional()
+  @IsString()
+  specialization?: string;
+
+  @IsDateString()
+  hireDate!: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
