@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -53,4 +54,8 @@ export class CreateTeacherDto {
 
   @IsDateString()
   hireDate!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
