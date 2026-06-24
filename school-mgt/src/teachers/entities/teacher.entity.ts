@@ -9,6 +9,11 @@ import {
 } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 
+export enum Gender {
+  MALE = 'Male',
+  FEMALE = 'Female',
+}
+
 @Entity('teachers')
 export class Teacher {
   @PrimaryGeneratedColumn()
@@ -27,15 +32,17 @@ export class Teacher {
   @Column()
   lastName!: string;
 
-  @Column()
-  gender!: string;
+  @Column({
+    type: 'enum',
+    enum: Gender,
+  })
+  gender!: Gender;
 
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
-  
-  @Column()
-  phone!: string;
+  @Column({ nullable: true })
+  phone?: string;
 
   @Column()
   qualification!: string;
@@ -47,7 +54,7 @@ export class Teacher {
   hireDate!: Date;
 
   @Column({ nullable: true })
-  address!: string;
+  address?: string;
 
   @Column({ default: true })
   isActive!: boolean;
