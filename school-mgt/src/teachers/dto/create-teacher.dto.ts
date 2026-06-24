@@ -1,12 +1,13 @@
 import {
-  IsBoolean,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsPhoneNumber,
   IsString,
   Length,
 } from 'class-validator';
+import { Gender } from '../entities/teacher.entity';
 
 export class CreateTeacherDto {
   @IsString()
@@ -21,25 +22,26 @@ export class CreateTeacherDto {
   @Length(2, 50)
   lastName!: string;
 
-  @IsString()
-  gender!: string;
+  @IsEnum(Gender)
+  gender!: Gender;
 
   @IsDateString()
-  dateOfBirth!: Date;
+  dateOfBirth!: string;
 
   @IsOptional()
-@IsString()
-profileImage?: string;
+  @IsString()
+  profileImage?: string;
 
   @IsEmail()
   email!: string;
 
+  @IsOptional()
   @IsPhoneNumber('NG')
-  phoneNumber!: string;
+  phoneNumber?: string;
 
   @IsOptional()
   @IsString()
-   address?: string;
+  address?: string;
 
   @IsOptional()
   @IsString()
@@ -50,9 +52,5 @@ profileImage?: string;
   specialization?: string;
 
   @IsDateString()
-  hireDate!: Date;
-
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
+  hireDate!: string;
 }
