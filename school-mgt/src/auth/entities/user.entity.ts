@@ -1,8 +1,10 @@
 import { Exclude } from 'class-transformer';
+import { Teacher } from 'src/teachers/entities/teacher.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -41,6 +43,10 @@ export class User {
 
   @Column({ default: true })
   isActive!: boolean;
+
+  // One-to-one relationship with Teacher entity will be defined in the Teacher entity
+  @OneToOne(() => Teacher, (teacher) => teacher.user)
+  teacher!: Teacher;
 
   @CreateDateColumn()
   createdAt!: Date;

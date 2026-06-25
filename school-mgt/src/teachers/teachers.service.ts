@@ -9,12 +9,16 @@ import { Repository } from 'typeorm';
 import { Teacher } from './entities/teacher.entity';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class TeachersService {
   constructor(
     @InjectRepository(Teacher)
     private readonly teacherRepo: Repository<Teacher>,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   // Create a new teacher
@@ -31,8 +35,6 @@ export class TeachersService {
 
     const teacher = this.teacherRepo.create({
       employeeId: dto.employeeId,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
       gender: dto.gender,
       dateOfBirth: new Date(dto.dateOfBirth),
       phone: dto.phoneNumber,
@@ -40,7 +42,7 @@ export class TeachersService {
       specialization: dto.specialization,
       hireDate: new Date(dto.hireDate),
       address: dto.address,
-      
+    
     });
 
     return await this.teacherRepo.save(teacher);

@@ -15,13 +15,6 @@ export class CreateTeacherDto {
   @Length(3, 55)
   employeeId!: string;
 
-  @IsString()
-  @Length(2, 55)
-  firstName!: string;
-
-  @IsString()
-  @Length(2, 50)
-  lastName!: string;
 
   @IsEnum(Gender)
   gender!: Gender;
@@ -33,8 +26,6 @@ export class CreateTeacherDto {
   @IsString()
   profileImage?: string;
 
-  @IsEmail()
-  email!: string;
 
   @IsOptional()
   @IsPhoneNumber('NG')
@@ -58,4 +49,8 @@ export class CreateTeacherDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsString()
+  @Length(8, 100)
+  password!: string;
 }
