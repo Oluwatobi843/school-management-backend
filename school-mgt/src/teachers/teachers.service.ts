@@ -31,8 +31,6 @@ export class TeachersService {
 
     const teacher = this.teacherRepo.create({
       employeeId: dto.employeeId,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
       gender: dto.gender,
       dateOfBirth: new Date(dto.dateOfBirth),
       phone: dto.phoneNumber,
@@ -40,7 +38,7 @@ export class TeachersService {
       specialization: dto.specialization,
       hireDate: new Date(dto.hireDate),
       address: dto.address,
-      
+    
     });
 
     return await this.teacherRepo.save(teacher);

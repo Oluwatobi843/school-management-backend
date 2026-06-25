@@ -26,11 +26,6 @@ export class Teacher {
   @JoinColumn()
   user!: User;
 
-  @Column()
-  firstName!: string;
-
-  @Column()
-  lastName!: string;
 
   @Column({
     type: 'enum',
