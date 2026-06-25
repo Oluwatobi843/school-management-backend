@@ -22,7 +22,9 @@ export class Teacher {
   @Column({ unique: true })
   employeeId!: string;
 
-  @OneToOne(() => User, { eager: true })
+  @OneToOne(() => User, (user) => user.teacher, {
+    eager: true,
+  })
   @JoinColumn()
   user!: User;
 

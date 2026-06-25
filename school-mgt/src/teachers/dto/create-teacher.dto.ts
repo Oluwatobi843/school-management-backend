@@ -49,4 +49,8 @@ export class CreateTeacherDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsString()
+  @Length(8, 100)
+  password!: string;
 }
