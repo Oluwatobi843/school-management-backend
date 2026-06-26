@@ -24,7 +24,7 @@ export class TeachersService {
   // Create a new teacher
   async create(dto: CreateTeacherDto): Promise<Teacher> {
     const existingTeacher = await this.teacherRepo.findOne({
-    
+      where: { employeeId: dto.employeeId },
     });
 
     if (existingTeacher) {
