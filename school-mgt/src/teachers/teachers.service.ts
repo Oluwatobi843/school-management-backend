@@ -1,108 +1,184 @@
+
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 import { Teacher } from './entities/teacher.entity';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { User } from 'src/auth/entities/user.entity';
+import { User, UserRole } from '../auth/entities/user.entity';
 
 @Injectable()
 export class TeachersService {
+  private readonly logger = new Logger(TeachersService.name);
+
   constructor(
     @InjectRepository(Teacher)
     private readonly teacherRepo: Repository<Teacher>,
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
-  // Create a new teacher
-  async create(dto: CreateTeacherDto): Promise<Teacher> {
+  // =====================================================
+  // Helper Methods
+  // =====================================================
+
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  private sanitizeUser(user: User) {
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
+
+  private async validateEmail(email: string): Promise<void> {
+    const existingUser = await this.userRepo.findOne({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException(
+        'A user with this email already exists.',
+      );
+    }
+  }
+
+  private async validateEmployeeId(
+    employeeId: string,
+  ): Promise<void> {
     const existingTeacher = await this.teacherRepo.findOne({
-      where: { employeeId: dto.employeeId },
+      where: { employeeId },
     });
 
     if (existingTeacher) {
       throw new ConflictException(
-        'A teacher with this employee ID already exists',
+        'A teacher with this employee ID already exists.',
       );
     }
-
-    const teacher = this.teacherRepo.create({
-      employeeId: dto.employeeId,
-      gender: dto.gender,
-      dateOfBirth: new Date(dto.dateOfBirth),
-      phone: dto.phoneNumber,
-      qualification: dto.qualification,
-      specialization: dto.specialization,
-      hireDate: new Date(dto.hireDate),
-      address: dto.address,
-    
-    });
-
-    return await this.teacherRepo.save(teacher);
   }
 
-  // Get all teachers
-  async findAll(): Promise<Teacher[]> {
-    return await this.teacherRepo.find({
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
+  // =====================================================
+  // Create Teacher
+  // =====================================================
 
-  // Get one teacher by ID
-  async findOne(id: number): Promise<Teacher> {
-    const teacher = await this.teacherRepo.findOne({
-      where: { id },
-    });
+  async create(createTeacherDto: CreateTeacherDto) {
+    await this.validateEmail(createTeacherDto.email);
+    await this.validateEmployeeId(createTeacherDto.employeeId);
 
-    if (!teacher) {
-      throw new NotFoundException(
-        `Teacher with ID ${id} not found`,
+    try {
+      const teacher =
+        await this.dataSource.transaction(
+          async (manager) => {
+            // Hash Password
+            const hashedPassword =
+              await this.hashPassword(
+                createTeacherDto.password,
+              );
+
+            // Create User
+            const user = manager.create(User, {
+              firstName:
+                createTeacherDto.firstName,
+              lastName:
+                createTeacherDto.lastName,
+              email: createTeacherDto.email,
+              password: hashedPassword,
+              role: UserRole.TEACHER,
+            });
+
+            const savedUser = await manager.save(
+              User,
+              user,
+            );
+
+            // Create Teacher Profile
+            const teacher = manager.create(
+              Teacher,
+              {
+                employeeId:
+                  createTeacherDto.employeeId,
+                gender: createTeacherDto.gender,
+                dateOfBirth: new Date(
+                  createTeacherDto.dateOfBirth,
+                ),
+                phone: createTeacherDto.phone,
+                qualification:
+                  createTeacherDto.qualification,
+                specialization:
+                  createTeacherDto.specialization,
+                hireDate: new Date(
+                  createTeacherDto.hireDate,
+                ),
+                address:
+                  createTeacherDto.address,
+                profileImage:
+                  createTeacherDto.profileImage,
+                user: savedUser,
+              },
+            );
+
+            const savedTeacher =
+              await manager.save(
+                Teacher,
+                teacher,
+              );
+
+            return {
+              ...savedTeacher,
+              user: this.sanitizeUser(savedUser),
+            };
+          },
+        );
+
+      return {
+        message:
+          'Teacher created successfully.',
+        data: teacher,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Failed to create teacher.',
+        error.stack,
+      );
+
+      throw new InternalServerErrorException(
+        'Failed to create teacher.',
       );
     }
-
-    return teacher;
   }
 
-  // Update a teacher
+  // =====================================================
+  // Remaining CRUD Methods
+  // =====================================================
+
+  async findAll() {
+    // Next implementation
+  }
+
+  async findOne(id: number) {
+    // Next implementation
+  }
+
   async update(
     id: number,
-    dto: UpdateTeacherDto,
-  ): Promise<Teacher> {
-    const teacher = await this.findOne(id);
-
-    Object.assign(teacher, {
-      ...dto,
-      dateOfBirth: dto.dateOfBirth
-        ? new Date(dto.dateOfBirth)
-        : teacher.dateOfBirth,
-      hireDate: dto.hireDate
-        ? new Date(dto.hireDate)
-        : teacher.hireDate,
-      phone: dto.phoneNumber ?? teacher.phone,
-    });
-
-    return await this.teacherRepo.save(teacher);
+    updateTeacherDto: UpdateTeacherDto,
+  ) {
+    // Next implementation
   }
 
-  // Delete a teacher
-  async remove(
-    id: number,
-  ): Promise<{ message: string }> {
-    const teacher = await this.findOne(id);
-
-    await this.teacherRepo.remove(teacher);
-
-    return {
-      message: 'Teacher deleted successfully',
-    };
+  async remove(id: number) {
+    // Next implementation
   }
 }
+
