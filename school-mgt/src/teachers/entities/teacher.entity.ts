@@ -64,6 +64,9 @@ export class Teacher {
   })
   hireDate!: Date;
 
+  
+  
+
   @Column({
     nullable: true,
   })

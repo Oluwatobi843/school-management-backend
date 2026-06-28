@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { QueryTeacherDto } from './dto/query-teacher.dto';
 import * as bcrypt from 'bcrypt';
 
 import { Teacher } from './entities/teacher.entity';
@@ -162,23 +163,64 @@ export class TeachersService {
   // Remaining CRUD Methods
   // =====================================================
 
-  async findAll() {
-    // Next implementation
+  async findAll(query: QueryTeacherDto) {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const queryBuilder = this.teacherRepo
+    .createQueryBuilder('teacher')
+    .leftJoinAndSelect('teacher.user', 'user');
+
+  if (query.search) {
+    queryBuilder.andWhere(
+      `(teacher.employeeId ILIKE :search
+        OR user.firstName ILIKE :search
+        OR user.lastName ILIKE :search
+        OR user.email ILIKE :search)`,
+      {
+        search: `%${query.search}%`,
+      },
+    );
   }
 
-  async findOne(id: number) {
-    // Next implementation
+  if (query.specialization) {
+    queryBuilder.andWhere(
+      'teacher.specialization = :specialization',
+      {
+        specialization: query.specialization,
+      },
+    );
   }
 
-  async update(
-    id: number,
-    updateTeacherDto: UpdateTeacherDto,
-  ) {
-    // Next implementation
+  if (query.gender) {
+    queryBuilder.andWhere(
+      'teacher.gender = :gender',
+      {
+        gender: query.gender,
+      },
+    );
   }
 
-  async remove(id: number) {
-    // Next implementation
-  }
+  queryBuilder
+    .orderBy('teacher.createdAt', 'DESC')
+    .skip(skip)
+    .take(limit);
+
+  const [teachers, total] =
+    await queryBuilder.getManyAndCount();
+
+  return {
+    success: true,
+    message: 'Teachers retrieved successfully.',
+    data: teachers,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 }
 
