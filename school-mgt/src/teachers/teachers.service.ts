@@ -30,9 +30,9 @@ export class TeachersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  // =====================================================
+
   // Helper Methods
-  // =====================================================
+ 
 
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
@@ -69,9 +69,9 @@ export class TeachersService {
     }
   }
 
-  // =====================================================
+
   // Create Teacher
-  // =====================================================
+ 
 
   async create(createTeacherDto: CreateTeacherDto) {
     await this.validateEmail(createTeacherDto.email);
@@ -150,7 +150,9 @@ export class TeachersService {
     } catch (error) {
       this.logger.error(
         'Failed to create teacher.',
-        error.stack,
+        error instanceof Error
+           ? error.stack
+            : String(error),
       );
 
       throw new InternalServerErrorException(
@@ -159,9 +161,9 @@ export class TeachersService {
     }
   }
 
-  // =====================================================
+
   // Remaining CRUD Methods
-  // =====================================================
+
 
   async findAll(query: QueryTeacherDto) {
   const page = Number(query.page) || 1;
@@ -224,9 +226,9 @@ export class TeachersService {
 }
 
 
-// =====================================================
+
 // Get Teacher By ID
-// =====================================================
+
 
 async findOne(id: number) {
   const teacher = await this.teacherRepo.findOne({
@@ -248,5 +250,158 @@ async findOne(id: number) {
     },
   };
 }
+
+
+// Update Teacher
+
+
+async update(
+  id: number,
+  dto: UpdateTeacherDto,
+) {
+  const teacher = await this.teacherRepo.findOne({
+    where: { id },
+  });
+
+  if (!teacher) {
+    throw new NotFoundException(
+      `Teacher with ID ${id} not found.`,
+    );
+  }
+
+  try {
+    const updatedTeacher = await this.dataSource.transaction(
+      async (manager) => {
+        // Update User
+
+        if (dto.firstName) {
+          teacher.user.firstName = dto.firstName;
+        }
+
+        if (dto.lastName) {
+          teacher.user.lastName = dto.lastName;
+        }
+
+        if (dto.email) {
+          const existingUser = await manager.findOne(User, {
+            where: {
+              email: dto.email,
+            },
+          });
+
+          if (
+            existingUser &&
+            existingUser.id !== teacher.user.id
+          ) {
+            throw new ConflictException(
+              'A user with this email already exists.',
+            );
+          }
+
+          teacher.user.email = dto.email;
+        }
+
+        if (dto.password) {
+          teacher.user.password =
+            await this.hashPassword(dto.password);
+        }
+
+        await manager.save(User, teacher.user);
+
+        // Update Teacher
+
+        if (dto.employeeId) {
+          teacher.employeeId = dto.employeeId;
+        }
+
+        if (dto.gender) {
+          teacher.gender = dto.gender;
+        }
+
+        if (dto.dateOfBirth) {
+          teacher.dateOfBirth = new Date(
+            dto.dateOfBirth,
+          );
+        }
+
+        if (dto.phone !== undefined) {
+          teacher.phone = dto.phone;
+        }
+
+        if (dto.address !== undefined) {
+          teacher.address = dto.address;
+        }
+
+        if (dto.qualification) {
+          teacher.qualification =
+            dto.qualification;
+        }
+
+        if (dto.specialization) {
+          teacher.specialization =
+            dto.specialization;
+        }
+
+        if (dto.hireDate) {
+          teacher.hireDate = new Date(
+            dto.hireDate,
+          );
+        }
+
+        if (dto.profileImage !== undefined) {
+          teacher.profileImage =
+            dto.profileImage;
+        }
+
+        return await manager.save(
+          Teacher,
+          teacher,
+        );
+      },
+    );
+
+    return {
+      success: true,
+      message: 'Teacher updated successfully.',
+      data: {
+        ...updatedTeacher,
+        user: this.sanitizeUser(
+          updatedTeacher.user,
+        ),
+      },
+    };
+  } catch (error) {
+    this.logger.error(
+      'Failed to update teacher.',
+      error instanceof Error
+        ? error.stack
+        : String(error),
+    );
+
+    throw new InternalServerErrorException(
+      'Failed to update teacher.',
+    );
+  }
+}
+
+async remove(id: number) {
+  const teacher = await this.teacherRepo.findOne({
+    where: { id },
+  });
+
+  if (!teacher) {
+    throw new NotFoundException(
+      `Teacher with ID ${id} not found.`,
+    );
+  }
+
+  await this.teacherRepo.softDelete(id);
+
+  return {
+    success: true,
+    message: 'Teacher deleted successfully.',
+  };
+}
+
 }
 
