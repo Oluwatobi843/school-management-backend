@@ -9,6 +9,8 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
+import { Query } from '@nestjs/common';
+import { QueryTeacherDto } from './dto/query-teacher.dto';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 
@@ -26,8 +28,8 @@ export class TeachersController {
 
   // Get all teachers
   @Get()
-  findAll() {
-    return this.teachersService.findAll();
+  findAll(@Query() query: QueryTeacherDto) {
+    return this.teachersService.findAll(query);
   }
 
   // Get a teacher by ID

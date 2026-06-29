@@ -222,5 +222,31 @@ export class TeachersService {
     },
   };
 }
+
+
+// =====================================================
+// Get Teacher By ID
+// =====================================================
+
+async findOne(id: number) {
+  const teacher = await this.teacherRepo.findOne({
+    where: { id },
+  });
+
+  if (!teacher) {
+    throw new NotFoundException(
+      `Teacher with ID ${id} not found.`,
+    );
+  }
+
+  return {
+    success: true,
+    message: 'Teacher retrieved successfully.',
+    data: {
+      ...teacher,
+      user: this.sanitizeUser(teacher.user),
+    },
+  };
+}
 }
 
