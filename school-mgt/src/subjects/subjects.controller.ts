@@ -1,34 +1,87 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { QuerySubjectDto } from './dto/query-subject.dto';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../auth/entities/user.entity';
 
 @Controller('subjects')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SubjectsController {
-  constructor(private readonly subjectsService: SubjectsService) {}
+  constructor(
+    private readonly subjectsService: SubjectsService,
+  ) {}
+
+  
+  // Create Subject
+ 
 
   @Post()
-  create(@Body() createSubjectDto: CreateSubjectDto) {
-    return this.subjectsService.create(createSubjectDto);
+  @Roles(UserRole.ADMIN)
+  create(@Body() dto: CreateSubjectDto) {
+    return this.subjectsService.create(dto);
   }
+
+  
+  // Get All Subjects
+  
 
   @Get()
-  findAll() {
-    return this.subjectsService.findAll();
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  findAll(@Query() query: QuerySubjectDto) {
+    return this.subjectsService.findAll(query);
   }
+
+  
+  // Get Subject By ID
+  
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subjectsService.findOne(+id);
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.subjectsService.findOne(id);
   }
+
+  
+  // Update Subject
+ 
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubjectDto: UpdateSubjectDto) {
-    return this.subjectsService.update(+id, updateSubjectDto);
+  @Roles(UserRole.ADMIN)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateSubjectDto,
+  ) {
+    return this.subjectsService.update(id, dto);
   }
 
+ 
+  // Delete Subject
+  
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subjectsService.remove(+id);
+  @Roles(UserRole.ADMIN)
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.subjectsService.remove(id);
   }
 }

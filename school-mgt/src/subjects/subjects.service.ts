@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -50,7 +51,7 @@ export class SubjectsService {
   }
 
   // Create Subject
-  
+
   async create(createSubjectDto: CreateSubjectDto) {
     await this.validateCode(createSubjectDto.code);
     await this.validateName(createSubjectDto.name);
