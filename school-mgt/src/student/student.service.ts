@@ -86,16 +86,39 @@ export class StudentService {
   }
 
   //  GET ALL STUDENTS 
-  async findAll() {
-    const students = await this.studentRepository.find({
-      relations: { user: true },
-    });
+  // async findAll() {
+  //   const students = await this.studentRepository.find({
+  //     relations: { user: true },
+  //   });
 
-    return {
-      message: 'Students fetched successfully',
-      data: students,
-    };
-  }
+  //   return {
+  //     message: 'Students fetched successfully',
+  //     data: students,
+  //   };
+  // }
+  async findAll(page: number = 1, limit: number = 10) {
+  const skip = (page - 1) * limit;
+
+  const [students, total] = await this.studentRepository.findAndCount({
+    relations: { user: true },
+    skip,
+    take: limit,
+    order: {
+      createdAt: 'DESC',
+    },
+  });
+
+  return {
+    message: 'Students fetched successfully',
+    data: students,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 
   //  GET BY ADMISSION 
   async findByAdmissionNumber(admissionNumber: string) {
