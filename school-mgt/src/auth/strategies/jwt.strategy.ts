@@ -8,7 +8,7 @@ import { AuthService } from '../auth.service';
 import { UserRole } from '../entities/user.entity';
 
 export interface JwtPayload {
-  sub: number;
+  sub: number;  
   email: string;
   role: UserRole;
 }

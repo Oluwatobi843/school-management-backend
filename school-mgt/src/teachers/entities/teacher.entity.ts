@@ -1,3 +1,4 @@
+
 import {
   Column,
   CreateDateColumn,
@@ -6,6 +7,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 
@@ -19,6 +22,7 @@ export class Teacher {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Index()
   @Column({ unique: true })
   employeeId!: string;
 
@@ -28,18 +32,26 @@ export class Teacher {
   @JoinColumn()
   user!: User;
 
-
   @Column({
     type: 'enum',
     enum: Gender,
   })
   gender!: Gender;
 
-  @Column({ type: 'date' })
+  @Column({
+    type: 'date',
+  })
   dateOfBirth!: Date;
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+  })
   phone?: string;
+
+  @Column({
+    nullable: true,
+  })
+  profileImage?: string;
 
   @Column()
   qualification!: string;
@@ -47,13 +59,22 @@ export class Teacher {
   @Column()
   specialization!: string;
 
-  @Column({ type: 'date' })
+  @Column({
+    type: 'date',
+  })
   hireDate!: Date;
 
-  @Column({ nullable: true })
+  
+  
+
+  @Column({
+    nullable: true,
+  })
   address?: string;
 
-  @Column({ default: true })
+  @Column({
+    default: true,
+  })
   isActive!: boolean;
 
   @CreateDateColumn()
@@ -61,4 +82,8 @@ export class Teacher {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
+

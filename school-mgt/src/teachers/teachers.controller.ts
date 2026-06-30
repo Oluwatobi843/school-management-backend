@@ -7,11 +7,22 @@ import {
   Patch,
   Post,
   ParseIntPipe,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
+
 import { TeachersService } from './teachers.service';
+import { QueryTeacherDto } from './dto/query-teacher.dto';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../auth/entities/user.entity';
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN)
 @Controller('teachers')
 export class TeachersController {
   constructor(
@@ -26,8 +37,8 @@ export class TeachersController {
 
   // Get all teachers
   @Get()
-  findAll() {
-    return this.teachersService.findAll();
+  findAll(@Query() query: QueryTeacherDto) {
+    return this.teachersService.findAll(query);
   }
 
   // Get a teacher by ID
