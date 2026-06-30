@@ -98,9 +98,9 @@ export class AuthService {
   
   // GET USER BY ID
   
-  async getUserById(userId: number) {
+  async getUserById(id: number) {
     const user = await this.userRepo.findOne({
-      where: { id: userId },
+      where: { id },
     });
 
     if (!user) {

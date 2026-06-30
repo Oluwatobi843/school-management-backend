@@ -18,27 +18,28 @@ import { UpdateStudentDto } from './dto/update-student.dto';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { role } from 'src/auth/decorators/roles.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/auth/entities/user.entity';
 
+@UseGuards(JwtAuthGuard)
 @Controller('students')
 export class StudentController {
   constructor(private readonly studentService: StudentService) {}
 
   // CREATE STUDENT (ADMIN ONLY)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Post()
   create(
     @Body() dto: CreateStudentDto,
     @Req() req: any,
   ) {
-    return this.studentService.create(dto, req.user.id);
+    return this.studentService.create(dto, req.user.sub);
   }
 
   // GET ALL STUDENTS (ADMIN + TEACHER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN, UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Get()
   findAll(@Query('page') page: string, 
     @Query('limit') limit: string) {
@@ -51,7 +52,7 @@ export class StudentController {
   // GET STUDENT BY ADMISSION NUMBER
   // ADMIN + TEACHER + STUDENT
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   @Get('admission/:admissionNumber')
   findByAdmissionNumber(
     @Param('admissionNumber') admissionNumber: string,
@@ -62,7 +63,7 @@ export class StudentController {
   // GET SINGLE STUDENT
   // ADMIN + TEACHER + STUDENT (service ensures students only see themselves)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -73,7 +74,7 @@ export class StudentController {
 
   // UPDATE STUDENT (ADMIN ONLY)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -84,7 +85,7 @@ export class StudentController {
 
   // DELETE STUDENT (ADMIN ONLY)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @role(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   remove(
     @Param('id', ParseIntPipe) id: number,

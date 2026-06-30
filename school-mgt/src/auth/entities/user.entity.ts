@@ -1,13 +1,13 @@
 import { Exclude } from 'class-transformer';
+import { Teacher } from 'src/teachers/entities/teacher.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  CreateDateColumn,
 } from 'typeorm';
-
-
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -15,8 +15,6 @@ export enum UserRole {
   STUDENT = 'STUDENT',
   PARENT = 'PARENT',
 }
-
-
 
 @Entity('users')
 export class User {
@@ -29,29 +27,30 @@ export class User {
   @Column({ length: 100 })
   lastName!: string;
 
-  @Column({ unique: true})
-  email!: string
+  @Column({ unique: true })
+  email!: string;
 
   @Exclude()
   @Column()
-  password!: string
-
+  password!: string;
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.STUDENT,
   })
-
   role!: UserRole;
 
-  @Column({ default: true})
+  @Column({ default: true })
   isActive!: boolean;
+
+  // One-to-one relationship with Teacher entity will be defined in the Teacher entity
+  @OneToOne(() => Teacher, (teacher) => teacher.user)
+  teacher!: Teacher;
 
   @CreateDateColumn()
   createdAt!: Date;
-  
+
   @UpdateDateColumn()
   updatedAt!: Date;
-
 }
