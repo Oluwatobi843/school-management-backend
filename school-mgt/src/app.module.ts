@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 
 import { StudentModule } from './student/student.module';
 import { TeachersModule } from './teachers/teachers.module';
+import { SubjectsModule } from './subjects/subjects.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -23,7 +24,7 @@ import { TeachersModule } from './teachers/teachers.module';
  
 
   }), AuthModule, 
-  StudentModule, TeachersModule,
+  StudentModule, TeachersModule, SubjectsModule,
    
 
   ],
