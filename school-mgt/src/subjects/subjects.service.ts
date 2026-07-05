@@ -105,7 +105,7 @@ async findAll(query: QuerySubjectDto) {
   if (query.search) {
     queryBuilder.andWhere(
       `(subject.code ILIKE :search
-        OR subject.name ILIKE :search)`,
+        OR subject ILIKE :search)`,
       {
         search: `%${query.search}%`,
       },
