@@ -27,16 +27,12 @@ export class Student {
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
-  @ManyToOne(
-  () => Class,
-  (schoolClass) => schoolClass.students,
-  {
-    eager: true,
-    nullable: false,
-  },
-  )
-  @JoinColumn({ name: 'classId' })
-  class!: Class;
+@ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
+  eager: true,
+  nullable: true,
+})
+@JoinColumn({ name: 'classId' })
+class?: Class;
 
   @Column({ nullable: true })
   phoneNumber!: string;
