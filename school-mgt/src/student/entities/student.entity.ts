@@ -6,7 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+
+import { Class } from '../../classes/entities/class.entity';
 
 import { User } from 'src/auth/entities/user.entity';
 
@@ -24,8 +27,12 @@ export class Student {
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
-  @Column()
-  className!: string;
+@ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
+  eager: true,
+  nullable: true,
+})
+@JoinColumn({ name: 'classId' })
+class?: Class;
 
   @Column({ nullable: true })
   phoneNumber!: string;

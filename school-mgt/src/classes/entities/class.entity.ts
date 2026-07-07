@@ -4,9 +4,11 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Student } from '../../student/entities/student.entity';
 
 export enum ClassLevel {
   NURSERY = 'Nursery',
@@ -52,6 +54,12 @@ export class Class {
     default: true,
   })
   isActive!: boolean;
+
+  @OneToMany(
+    () => Student,
+    (student) => student.class,
+  )
+  students!: Student[];
 
   @CreateDateColumn()
   createdAt!: Date;
