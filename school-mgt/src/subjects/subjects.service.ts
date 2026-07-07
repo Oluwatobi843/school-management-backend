@@ -21,7 +21,7 @@ export class SubjectsService {
     @InjectRepository(Subject)
     private readonly subjectRepo: Repository<Subject>,
 
-    // private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   // Helper Methods
