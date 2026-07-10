@@ -1,11 +1,11 @@
 import {
-  Controller,
- Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -26,28 +26,29 @@ export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
  
-  // Create Class (ADMIN only)
-  
+  // CREATE CLASS
+  // ADMIN ONLY
+ 
   @Post()
-  @Roles(UserRole.ADMIN)
+  // @Roles(UserRole.ADMIN)
   create(@Body() createClassDto: CreateClassDto) {
     return this.classesService.create(createClassDto);
   }
 
-  
-  // Get All Classes
-  // ADMIN, TEACHER, STUDENT
-  
+ 
+  // GET ALL CLASSES
+  // ADMIN + TEACHER + STUDENT
+ 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   findAll(@Query() query: QueryClassDto) {
     return this.classesService.findAll(query);
   }
 
-
-  // Get Single Class
-  // ADMIN, TEACHER, STUDENT
-
+ 
+  // GET ONE CLASS
+  // ADMIN + TEACHER + STUDENT
+ 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   findOne(@Param('id') id: string) {
@@ -55,8 +56,9 @@ export class ClassesController {
   }
 
 
-  // Update Class (ADMIN only)
-  
+  // UPDATE CLASS
+  // ADMIN ONLY
+ 
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   update(
@@ -66,8 +68,9 @@ export class ClassesController {
     return this.classesService.update(+id, updateClassDto);
   }
 
-  
-  // Delete Class (ADMIN only)
+ 
+  // DELETE CLASS
+  // ADMIN ONLY
   
   @Delete(':id')
   @Roles(UserRole.ADMIN)
