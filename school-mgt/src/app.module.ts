@@ -1,36 +1,41 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
 
+import { AuthModule } from './auth/auth.module';
 import { StudentModule } from './student/student.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { ClassesModule } from './classes/classes.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
 
-    type: 'postgres',
-    host: 'localhost',
-    port:   5432,
-    username: 'postgres',
-    password: 'root',
-    database: 'school-mgt',
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
 
-    autoLoadEntities: true,
-   
-    synchronize: true    
- 
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
 
-  }), AuthModule, 
-  StudentModule, TeachersModule, SubjectsModule, ClassesModule,
-   
-
+    AuthModule,
+    StudentModule,
+    TeachersModule,
+    SubjectsModule,
+    ClassesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
-  
 })
 export class AppModule {}
