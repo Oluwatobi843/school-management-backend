@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/entities/user.entity';
+import { AssignSubjectsDto } from './dto/assign-subjects.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -55,6 +56,18 @@ export class TeachersController {
   ) {
     return this.teachersService.update(id, dto);
   }
+
+  @Patch(':id/subjects')
+@Roles(UserRole.ADMIN)
+assignSubjects(
+  @Param('id') id: string,
+  @Body() dto: AssignSubjectsDto,
+) {
+  return this.teachersService.assignSubjects(
+    +id,
+    dto.subjectIds,
+  );
+}
 
   // Delete a teacher
   @Delete(':id')
