@@ -9,8 +9,11 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
+import { Subject } from '../../subjects/entities/subject.entity';
 
 export enum Gender {
   MALE = 'Male',
@@ -64,7 +67,13 @@ export class Teacher {
   })
   hireDate!: Date;
 
-  
+  @ManyToMany(() => Subject, (subject) => subject.teachers, {
+  eager: true,
+})
+@JoinTable({
+  name: 'teacher_subjects',
+})
+subjects!: Subject[];
   
 
   @Column({

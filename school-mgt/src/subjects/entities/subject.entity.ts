@@ -6,7 +6,10 @@ import {
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
+
+import { Teacher } from '../../teachers/entities/teacher.entity';
 
 @Entity('subjects')
 export class Subject {
@@ -42,6 +45,9 @@ export class Subject {
     default: true,
   })
   isActive!: boolean;
+
+  @ManyToMany(() => Teacher, (teacher) => teacher.subjects)
+  teachers!: Teacher[];
 
   @CreateDateColumn()
   createdAt!: Date;
