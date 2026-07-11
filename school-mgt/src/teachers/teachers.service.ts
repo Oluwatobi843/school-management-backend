@@ -15,6 +15,8 @@ import { Teacher } from './entities/teacher.entity';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { User, UserRole } from '../auth/entities/user.entity';
+import { Subject } from '../subjects/entities/subject.entity';
+
 
 @Injectable()
 export class TeachersService {
@@ -26,6 +28,9 @@ export class TeachersService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+
+      @InjectRepository(Subject)
+      private readonly subjectRepo: Repository<Subject>,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -161,8 +166,6 @@ export class TeachersService {
     }
   }
 
-
-  // Remaining CRUD Methods
 
 
   async findAll(query: QueryTeacherDto) {
@@ -400,6 +403,43 @@ async remove(id: number) {
   return {
     success: true,
     message: 'Teacher deleted successfully.',
+  };
+}
+
+
+// Assign Subjects to Teacher
+async assignSubjects(
+  teacherId: number,
+  subjectIds: number[],
+) {
+  const teacher = await this.teacherRepo.findOne({
+    where: { id: teacherId },
+    relations: ['subjects'],
+  });
+
+  if (!teacher) {
+    throw new NotFoundException(
+      `Teacher with ID ${teacherId} not found.`,
+    );
+  }
+
+  const subjects = await this.subjectRepo.findByIds(subjectIds);
+
+  if (subjects.length !== subjectIds.length) {
+    throw new NotFoundException(
+      'One or more subjects were not found.',
+    );
+  }
+
+  teacher.subjects = subjects;
+
+  const updatedTeacher =
+    await this.teacherRepo.save(teacher);
+
+  return {
+    success: true,
+    message: 'Subjects assigned successfully.',
+    data: updatedTeacher,
   };
 }
 
