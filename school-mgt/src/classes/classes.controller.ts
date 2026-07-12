@@ -21,7 +21,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/entities/user.entity';
 
 @Controller('classes')
-@UseGuards(JwtAuthGuard, RolesGuard)
+
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
