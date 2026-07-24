@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -25,56 +26,36 @@ import { UserRole } from '../auth/entities/user.entity';
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
- 
-  // CREATE CLASS
-  // ADMIN ONLY
- 
   @Post()
-  // @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   create(@Body() createClassDto: CreateClassDto) {
     return this.classesService.create(createClassDto);
   }
 
- 
-  // GET ALL CLASSES
-  // ADMIN + TEACHER + STUDENT
- 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   findAll(@Query() query: QueryClassDto) {
     return this.classesService.findAll(query);
   }
 
- 
-  // GET ONE CLASS
-  // ADMIN + TEACHER + STUDENT
- 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
-  findOne(@Param('id') id: string) {
-    return this.classesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.classesService.findOne(id);
   }
 
-
-  // UPDATE CLASS
-  // ADMIN ONLY
- 
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateClassDto: UpdateClassDto,
   ) {
-    return this.classesService.update(+id, updateClassDto);
+    return this.classesService.update(id, updateClassDto);
   }
 
- 
-  // DELETE CLASS
-  // ADMIN ONLY
-  
   @Delete(':id')
   @Roles(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.classesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.classesService.remove(id);
   }
 }
