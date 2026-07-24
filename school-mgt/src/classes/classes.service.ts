@@ -22,9 +22,7 @@ export class ClassesService {
     private readonly classRepo: Repository<Class>,
   ) {}
 
-
   // Helper Methods
- 
 
   private async validateClassName(name: string): Promise<void> {
     const existing = await this.classRepo.findOne({
@@ -32,209 +30,160 @@ export class ClassesService {
     });
 
     if (existing) {
-      throw new ConflictException(
-        'A class with this name already exists.',
-      );
+      throw new ConflictException('A class with this name already exists.');
     }
   }
 
- 
-// Create Class
+  // Create Class
 
+  async create(createClassDto: CreateClassDto) {
+    await this.validateClassName(createClassDto.name);
 
-async create(createClassDto: CreateClassDto) {
-  await this.validateClassName(createClassDto.name);
+    try {
+      const newClass = this.classRepo.create(createClassDto);
 
-  try {
-    const newClass = this.classRepo.create(createClassDto);
+      const savedClass = await this.classRepo.save(newClass);
 
-    const savedClass = await this.classRepo.save(newClass);
+      return {
+        success: true,
+        message: 'Class created successfully.',
+        data: savedClass,
+      };
+    } catch (error: unknown) {
+      this.logger.error(
+        'Failed to create class.',
+        error instanceof Error ? error.stack : String(error),
+      );
 
-    return {
-      success: true,
-      message: 'Class created successfully.',
-      data: savedClass,
-    };
-  } catch (error: unknown) {
-    this.logger.error(
-      'Failed to create class.',
-      error instanceof Error ? error.stack : String(error),
-    );
-
-    throw new InternalServerErrorException(
-      'Failed to create class.',
-    );
-  }
-}
-
-
-// Get All Classes
-
-
-async findAll(query: QueryClassDto) {
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  const queryBuilder =
-    this.classRepo.createQueryBuilder('class');
-
-  if (query.search) {
-    queryBuilder.andWhere(
-      '(class.name ILIKE :search OR class.description ILIKE :search)',
-      {
-        search: `%${query.search}%`,
-      },
-    );
+      throw new InternalServerErrorException('Failed to create class.');
+    }
   }
 
-  if (query.level) {
-    queryBuilder.andWhere(
-      'class.level = :level',
-      {
+  // Get All Classes
+
+  async findAll(query: QueryClassDto) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.classRepo.createQueryBuilder('class');
+
+    if (query.search) {
+      queryBuilder.andWhere(
+        '(class.name ILIKE :search OR class.description ILIKE :search)',
+        {
+          search: `%${query.search}%`,
+        },
+      );
+    }
+
+    if (query.level) {
+      queryBuilder.andWhere('class.level = :level', {
         level: query.level,
-      },
-    );
-  }
+      });
+    }
 
-  if (query.isActive !== undefined) {
-    queryBuilder.andWhere(
-      'class.isActive = :isActive',
-      {
+    if (query.isActive !== undefined) {
+      queryBuilder.andWhere('class.isActive = :isActive', {
         isActive: query.isActive === 'true',
+      });
+    }
+
+    queryBuilder.orderBy('class.createdAt', 'DESC').skip(skip).take(limit);
+
+    const [classes, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      success: true,
+      message: 'Classes retrieved successfully.',
+      data: classes,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    );
+    };
   }
 
-  queryBuilder
-    .orderBy('class.createdAt', 'DESC')
-    .skip(skip)
-    .take(limit);
+  // Get Class By ID
 
-  const [classes, total] =
-    await queryBuilder.getManyAndCount();
+  async findOne(id: number) {
+    const classEntity = await this.classRepo.findOne({
+      where: { id },
+    });
 
-  return {
-    success: true,
-    message: 'Classes retrieved successfully.',
-    data: classes,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-}
-
-
-// Get Class By ID
-
-
-async findOne(id: number) {
-  const classEntity = await this.classRepo.findOne({
-    where: { id },
-  });
-
-  if (!classEntity) {
-    throw new NotFoundException(
-      `Class with ID ${id} not found.`,
-    );
-  }
-
-  return {
-    success: true,
-    message: 'Class retrieved successfully.',
-    data: classEntity,
-  };
-}
-
-
-// Update Class
-
-
-async update(
-  id: number,
-  updateClassDto: UpdateClassDto,
-) {
-  const classEntity = await this.classRepo.findOne({
-    where: { id },
-  });
-
-  if (!classEntity) {
-    throw new NotFoundException(
-      `Class with ID ${id} not found.`,
-    );
-  }
-
-  if (
-    updateClassDto.name &&
-    updateClassDto.name !== classEntity.name
-  ) {
-    await this.validateClassName(
-      updateClassDto.name,
-    );
-  }
-
-  Object.assign(classEntity, updateClassDto);
-
-  try {
-    const updatedClass =
-      await this.classRepo.save(classEntity);
+    if (!classEntity) {
+      throw new NotFoundException(`Class with ID ${id} not found.`);
+    }
 
     return {
       success: true,
-      message: 'Class updated successfully.',
-      data: updatedClass,
+      message: 'Class retrieved successfully.',
+      data: classEntity,
     };
-  } catch (error: unknown) {
-    this.logger.error(
-      'Failed to update class.',
-      error instanceof Error
-        ? error.stack
-        : String(error),
-    );
-
-    throw new InternalServerErrorException(
-      'Failed to update class.',
-    );
-  }
-}
-
-
-// Delete Class
-
-
-async remove(id: number) {
-  const classEntity = await this.classRepo.findOne({
-    where: { id },
-  });
-
-  if (!classEntity) {
-    throw new NotFoundException(
-      `Class with ID ${id} not found.`,
-    );
   }
 
-  try {
-    await this.classRepo.softDelete(id);
+  // Update Class
 
-    return {
-      success: true,
-      message: 'Class deleted successfully.',
-    };
-  } catch (error: unknown) {
-    this.logger.error(
-      'Failed to delete class.',
-      error instanceof Error
-        ? error.stack
-        : String(error),
-    );
+  async update(id: number, updateClassDto: UpdateClassDto) {
+    const classEntity = await this.classRepo.findOne({
+      where: { id },
+    });
 
-    throw new InternalServerErrorException(
-      'Failed to delete class.',
-    );
+    if (!classEntity) {
+      throw new NotFoundException(`Class with ID ${id} not found.`);
+    }
+
+    if (updateClassDto.name && updateClassDto.name !== classEntity.name) {
+      await this.validateClassName(updateClassDto.name);
+    }
+
+    Object.assign(classEntity, updateClassDto);
+
+    try {
+      const updatedClass = await this.classRepo.save(classEntity);
+
+      return {
+        success: true,
+        message: 'Class updated successfully.',
+        data: updatedClass,
+      };
+    } catch (error: unknown) {
+      this.logger.error(
+        'Failed to update class.',
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      throw new InternalServerErrorException('Failed to update class.');
+    }
   }
-}
 
+  // Delete Class
+
+  async remove(id: number) {
+    const classEntity = await this.classRepo.findOne({
+      where: { id },
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException(`Class with ID ${id} not found.`);
+    }
+
+    try {
+      await this.classRepo.softDelete(id);
+
+      return {
+        success: true,
+        message: 'Class deleted successfully.',
+      };
+    } catch (error: unknown) {
+      this.logger.error(
+        'Failed to delete class.',
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      throw new InternalServerErrorException('Failed to delete class.');
+    }
+  }
 }
