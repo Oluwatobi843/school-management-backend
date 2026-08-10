@@ -149,16 +149,15 @@ export class AuthService {
 
     // Create new Google user
 
-    user = this.userRepo.create({
-      firstName: googleUser.firstName,
-      lastName: googleUser.lastName,
-      email: googleUser.email,
-      googleId: googleUser.googleId,
-      password: null,
-      role: UserRole.STUDENT,
-      authProvider: AuthProvider.GOOGLE,
-      isActive: true,
-    });
+  user = this.userRepo.create({
+  firstName: googleUser.firstName,
+  lastName: googleUser.lastName,
+  email: googleUser.email,
+  googleId: googleUser.googleId,
+  role: UserRole.STUDENT,
+  authProvider: AuthProvider.GOOGLE,
+  isActive: true,
+});
 
     const savedUser = await this.userRepo.save(user);
 

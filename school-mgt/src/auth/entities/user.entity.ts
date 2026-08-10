@@ -1,3 +1,4 @@
+
 import { Exclude } from 'class-transformer';
 import { Teacher } from 'src/teachers/entities/teacher.entity';
 import {
@@ -32,12 +33,18 @@ export class User {
   @Column({ length: 100 })
   lastName!: string;
 
-  @Column({ unique: true })
+  @Column({
+    type: 'varchar',
+    unique: true,
+  })
   email!: string;
 
   @Exclude()
-  @Column({ nullable: true })
-  password!: string | null;
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  password?: string;
 
   @Column({
     type: 'enum',
@@ -54,12 +61,16 @@ export class User {
   authProvider!: AuthProvider;
 
   @Column({
+    type: 'varchar',
     nullable: true,
     unique: true,
   })
-  googleId!: string | null;
+  googleId?: string;
 
-  @Column({ default: true })
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
   isActive!: boolean;
 
   @OneToOne(() => Teacher, (teacher) => teacher.user)
@@ -71,3 +82,4 @@ export class User {
   @UpdateDateColumn()
   updatedAt!: Date;
 }
+
