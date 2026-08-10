@@ -1,52 +1,97 @@
-import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+
+import type { Response } from 'express';
+
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
+
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService){}
+  constructor(private readonly authService: AuthService) {}
 
-  // Public routes
+  // ============================
+  // LOCAL AUTHENTICATION
+  // ============================
+
+  // Register
   @Post('register')
-  register(@Body() dto: RegisterDto){
-    return this.authService.register(dto)
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
-  // Public routes
+  // Login
   @Post('login')
-  login(@Body() dto: LoginDto){
-    return this.authService.login(dto)
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
-  // Protected routes
+  // ============================
+  // GOOGLE AUTHENTICATION
+  // ============================
+
+  // Start Google login
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {
+    // Passport redirects the user to Google.
+  }
+
+  // Google callback
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  googleCallback(@Req() req: any, @Res() res: Response) {
+    return res.json(req.user);
+  }
+
+  // ============================
+  // PROTECTED ROUTES
+  // ============================
+
+  // Get profile
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req:any){
-    return this.authService.getUserById(req.user.id )
+  getProfile(@Req() req: any) {
+    return this.authService.getUserById(req.user.id);
   }
 
-  // Protected routes
+  // Update profile
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   updateProfile(
     @Req() req: any,
-    @Body() dto: UpdateProfileDto
-  ){
-    return this.authService.updateProfile(req.user.id, dto)
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(req.user.id, dto);
   }
 
-
-  // Protected routes
+  // Change password
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
   changePassword(
     @Req() req: any,
     @Body() dto: ChangePasswordDto,
-  ){
-    return this.authService.changePassword(req.user.id, dto)
+  ) {
+    return this.authService.changePassword(
+      req.user.id,
+      dto,
+    );
   }
 }
+
