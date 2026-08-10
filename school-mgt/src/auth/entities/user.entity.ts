@@ -16,9 +16,9 @@ export enum UserRole {
   PARENT = 'PARENT',
 }
 
-export enum UserRole {
+export enum AuthProvider {
   LOCAL = 'LOCAL',
-  GOOGLE = 'GOOGLE'
+  GOOGLE = 'GOOGLE',
 }
 
 @Entity('users')
@@ -36,8 +36,8 @@ export class User {
   email!: string;
 
   @Exclude()
-  @Column()
-  password!: string;
+  @Column({ nullable: true })
+  password!: string | null;
 
   @Column({
     type: 'enum',
@@ -46,10 +46,22 @@ export class User {
   })
   role!: UserRole;
 
+  @Column({
+    type: 'enum',
+    enum: AuthProvider,
+    default: AuthProvider.LOCAL,
+  })
+  authProvider!: AuthProvider;
+
+  @Column({
+    nullable: true,
+    unique: true,
+  })
+  googleId!: string | null;
+
   @Column({ default: true })
   isActive!: boolean;
 
-  // One-to-one relationship with Teacher entity will be defined in the Teacher entity
   @OneToOne(() => Teacher, (teacher) => teacher.user)
   teacher!: Teacher;
 
