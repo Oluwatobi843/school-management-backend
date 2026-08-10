@@ -20,8 +20,6 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
-
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -50,14 +48,16 @@ export class AuthController {
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   googleLogin() {
-    // Passport redirects the user to Google.
+    // Passport handles the redirect to Google.
   }
 
   // Google callback
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  googleCallback(@Req() req: any, @Res() res: Response) {
-    return res.json(req.user);
+  async googleCallback(@Req() req: any, @Res() res: Response) {
+    const result = await this.authService.googleLogin(req.user);
+
+    return res.json(result);
   }
 
   // ============================
