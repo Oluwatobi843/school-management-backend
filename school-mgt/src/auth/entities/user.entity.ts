@@ -16,6 +16,11 @@ export enum UserRole {
   PARENT = 'PARENT',
 }
 
+export enum UserRole {
+  LOCAL = 'LOCAL',
+  GOOGLE = 'GOOGLE'
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
