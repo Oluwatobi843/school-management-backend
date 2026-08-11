@@ -24,9 +24,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // ============================
+ 
   // LOCAL AUTHENTICATION
-  // ============================
+ 
 
   // Register
   @Post('register')
@@ -40,9 +40,9 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  // ============================
+  
   // GOOGLE AUTHENTICATION
-  // ============================
+ 
 
   // Start Google login
   @Get('google')
@@ -60,9 +60,9 @@ export class AuthController {
     return res.json(result);
   }
 
-  // ============================
+ 
   // PROTECTED ROUTES
-  // ============================
+  
 
   // Get profile
   @Get('profile')
