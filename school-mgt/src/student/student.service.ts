@@ -62,7 +62,9 @@ export class StudentService {
     });
 
     if (existingStudent) {
-      throw new BadRequestException('Admission number already exists');
+      throw new BadRequestException(
+        'Admission number already exists',
+      );
     }
 
     const schoolClass = await this.findClassById(dto.classId);
@@ -97,17 +99,18 @@ export class StudentService {
     };
   }
 
-    // GET ALL STUDENTS
+  // GET ALL STUDENTS
   async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [students, total] = await this.studentRepository.findAndCount({
-      skip,
-      take: limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    const [students, total] =
+      await this.studentRepository.findAndCount({
+        skip,
+        take: limit,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
 
     return {
       message: 'Students fetched successfully',
@@ -122,9 +125,11 @@ export class StudentService {
   }
 
   // GET STUDENT BY ADMISSION NUMBER
+  // ADMIN + TEACHER ONLY
   async findByAdmissionNumber(admissionNumber: string) {
     const student = await this.studentRepository.findOne({
       where: { admissionNumber },
+      relations: ['user'],
     });
 
     if (!student) {
@@ -138,13 +143,17 @@ export class StudentService {
   }
 
   // GET SINGLE STUDENT
+  // ADMIN + TEACHER + STUDENT
   async findOne(id: number, currentUser: any) {
     const student = await this.studentRepository.findOne({
       where: { id },
+      relations: ['user'],
     });
 
     if (!student) {
-      throw new NotFoundException(`Student with ID ${id} not found`);
+      throw new NotFoundException(
+        `Student with ID ${id} not found`,
+      );
     }
 
     // STUDENT CAN ONLY VIEW HIS/HER OWN PROFILE
@@ -163,14 +172,17 @@ export class StudentService {
     };
   }
 
-    // UPDATE STUDENT
+  // UPDATE STUDENT
+  // ADMIN ONLY
   async update(id: number, dto: UpdateStudentDto) {
     const student = await this.studentRepository.findOne({
       where: { id },
     });
 
     if (!student) {
-      throw new NotFoundException(`Student with ID ${id} not found`);
+      throw new NotFoundException(
+        `Student with ID ${id} not found`,
+      );
     }
 
     const { classId, ...otherFields } = dto;
@@ -190,13 +202,16 @@ export class StudentService {
   }
 
   // DELETE STUDENT
+  // ADMIN ONLY
   async remove(id: number) {
     const student = await this.studentRepository.findOne({
       where: { id },
     });
 
     if (!student) {
-      throw new NotFoundException(`Student with ID ${id} not found`);
+      throw new NotFoundException(
+        `Student with ID ${id} not found`,
+      );
     }
 
     await this.studentRepository.delete(id);
