@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -39,17 +40,17 @@ export class AttendanceService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  // ==========================================
+  
   // CREATE ATTENDANCE
-  // ==========================================
+  
 
   async create(
     dto: CreateAttendanceDto,
     userId: number,
   ) {
-    // ------------------------------------------
+   
     // Find the user recording attendance
-    // ------------------------------------------
+   
 
     const recorder = await this.userRepository.findOne({
       where: { id: userId },
@@ -71,9 +72,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Find student
-    // ------------------------------------------
+    
 
     const student = await this.studentRepository.findOne({
       where: { id: dto.studentId },
@@ -85,9 +86,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Find class
-    // ------------------------------------------
+    
 
     const schoolClass = await this.classRepository.findOne({
       where: { id: dto.classId },
@@ -99,9 +100,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Verify student belongs to class
-    // ------------------------------------------
+    
 
     if (!student.class) {
       throw new BadRequestException(
@@ -115,9 +116,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Check duplicate attendance
-    // ------------------------------------------
+    
 
     const existingAttendance =
       await this.attendanceRepository.findOne({
@@ -125,7 +126,7 @@ export class AttendanceService {
           student: {
             id: student.id,
           },
-          date: dto.date,
+          date:  new Date(dto.date),
         },
       });
 
@@ -135,9 +136,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Create attendance
-    // ------------------------------------------
+    
 
     const attendance =
       this.attendanceRepository.create({
@@ -158,9 +159,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // GET ALL ATTENDANCE
-  // ==========================================
+ 
 
   async findAll(
     page: number = 1,
@@ -192,9 +193,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // GET ATTENDANCE BY ID
-  // ==========================================
+ 
 
   async findOne(id: number) {
     const attendance =
@@ -214,9 +215,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // GET STUDENT ATTENDANCE
-  // ==========================================
+  
 
   async findByStudent(studentId: number) {
     const student =
@@ -248,9 +249,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // GET CLASS ATTENDANCE
-  // ==========================================
+  
 
   async findByClass(classId: number) {
     const schoolClass =
@@ -282,9 +283,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // UPDATE ATTENDANCE
-  // ==========================================
+  
 
   async update(
     id: number,
@@ -301,9 +302,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // If student is changed
-    // ------------------------------------------
+    
 
     if (dto.studentId !== undefined) {
       const student =
@@ -320,9 +321,9 @@ export class AttendanceService {
       attendance.student = student;
     }
 
-    // ------------------------------------------
+    
     // If class is changed
-    // ------------------------------------------
+    
 
     if (dto.classId !== undefined) {
       const schoolClass =
@@ -339,9 +340,9 @@ export class AttendanceService {
       attendance.class = schoolClass;
     }
 
-    // ------------------------------------------
+    
     // Verify student belongs to class
-    // ------------------------------------------
+    
 
     if (
       attendance.student.class &&
@@ -354,9 +355,9 @@ export class AttendanceService {
       );
     }
 
-    // ------------------------------------------
+    
     // Update fields
-    // ------------------------------------------
+    
 
     if (dto.date !== undefined) {
       attendance.date = new Date(dto.date);
@@ -381,9 +382,9 @@ export class AttendanceService {
     };
   }
 
-  // ==========================================
+  
   // DELETE ATTENDANCE
-  // ==========================================
+  
 
   async remove(id: number) {
     const attendance =
