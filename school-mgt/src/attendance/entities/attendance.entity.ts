@@ -26,9 +26,9 @@ export class Attendance {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  // ============================
+ 
   // STUDENT
-  // ============================
+ 
 
   @ManyToOne(() => Student, {
     eager: true,
@@ -38,9 +38,9 @@ export class Attendance {
   @JoinColumn({ name: 'studentId' })
   student!: Student;
 
-  // ============================
+ 
   // CLASS
-  // ============================
+
 
   @ManyToOne(() => Class, {
     eager: true,
@@ -50,18 +50,18 @@ export class Attendance {
   @JoinColumn({ name: 'classId' })
   class!: Class;
 
-  // ============================
+  
   // ATTENDANCE DATE
-  // ============================
+  
 
   @Column({
     type: 'date',
   })
   date!: Date;
 
-  // ============================
+
   // STATUS
-  // ============================
+ 
 
   @Column({
     type: 'enum',
@@ -69,9 +69,9 @@ export class Attendance {
   })
   status!: AttendanceStatus;
 
-  // ============================
+
   // REMARK
-  // ============================
+
 
   @Column({
     type: 'text',
@@ -79,10 +79,10 @@ export class Attendance {
   })
   remark?: string;
 
-  // ============================
+
   // RECORDED BY
   // ADMIN / TEACHER
-  // ============================
+
 
   @ManyToOne(() => User, {
     eager: true,
@@ -91,9 +91,9 @@ export class Attendance {
   @JoinColumn({ name: 'recordedById' })
   recordedBy!: User;
 
-  // ============================
+
   // TIMESTAMPS
-  // ============================
+
 
   @CreateDateColumn()
   createdAt!: Date;
