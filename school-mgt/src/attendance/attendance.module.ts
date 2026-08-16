@@ -31,4 +31,4 @@ import { User } from '../auth/entities/user.entity';
     AttendanceService,
   ],
 })
-export class AttendanceModule {}
+export class AttendanceModule {} 
