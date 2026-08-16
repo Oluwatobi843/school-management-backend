@@ -60,8 +60,9 @@ export class AttendanceController {
     @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
     findByStudent(
         @Param('studentId', ParseIntPipe) studentId: number,
+        @Req() req: any,
     ){
-        return this.attendanceService.findByStudent(studentId);
+        return this.attendanceService.findByStudent(studentId, req.user,);
     }
 
 

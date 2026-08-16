@@ -219,35 +219,47 @@ export class AttendanceService {
   // GET STUDENT ATTENDANCE
   
 
-  async findByStudent(studentId: number) {
-    const student =
-      await this.studentRepository.findOne({
-        where: { id: studentId },
-      });
+  async findByStudent(
+  studentId: number,
+  currentUser: any,
+) {
+  const student = await this.studentRepository.findOne({
+    where: { id: studentId },
+  });
 
-    if (!student) {
-      throw new NotFoundException(
-        `Student with ID ${studentId} not found`,
-      );
-    }
-
-    const attendance =
-      await this.attendanceRepository.find({
-        where: {
-          student: {
-            id: studentId,
-          },
-        },
-        order: {
-          date: 'DESC',
-        },
-      });
-
-    return {
-      message: 'Student attendance fetched successfully',
-      data: attendance,
-    };
+  if (!student) {
+    throw new NotFoundException(
+      `Student with ID ${studentId} not found`,
+    );
   }
+
+  // STUDENT CAN ONLY VIEW THEIR OWN ATTENDANCE
+  if (
+    currentUser.role === UserRole.STUDENT &&
+    student.user.id !== currentUser.id
+  ) {
+    throw new ForbiddenException(
+      'You are not allowed to access this student attendance',
+    );
+  }
+
+  const attendance =
+    await this.attendanceRepository.find({
+      where: {
+        student: {
+          id: studentId,
+        },
+      },
+      order: {
+        date: 'DESC',
+      },
+    });
+
+  return {
+    message: 'Student attendance fetched successfully',
+    data: attendance,
+  };
+}
 
   
   // GET CLASS ATTENDANCE
