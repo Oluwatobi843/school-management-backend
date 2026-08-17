@@ -1,98 +1,288 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# School Management Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A modular school-management REST API built with **NestJS, TypeScript, PostgreSQL and TypeORM**. The system is designed to centralize core academic and administrative workflows such as authentication, users, students, classes and attendance while providing a maintainable foundation for additional school operations.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
 
-## Description
+The project follows NestJS's modular architecture and separates HTTP controllers, business services, DTOs, guards and database entities. PostgreSQL provides relational persistence through TypeORM.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The backend is intended to support authenticated school users and protect sensitive operations with authentication and authorization mechanisms.
 
-## Project setup
+## Core capabilities
 
-```bash
-$ npm install
+- User registration and authentication
+- JWT-based authentication
+- Google authentication support
+- Password management
+- Profile management
+- Role-aware authorization foundations
+- Student management
+- Class management
+- Attendance management
+- Relational database persistence
+- DTO-based request validation
+- Unit and end-to-end testing setup
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | NestJS 11 |
+| Language | TypeScript 5 |
+| Database | PostgreSQL |
+| ORM | TypeORM |
+| Authentication | JWT / Passport-based authentication |
+| OAuth | Google authentication support |
+| Testing | Jest / Supertest |
+| Code quality | ESLint / Prettier |
+
+## Architecture
+
+The application uses a feature-oriented NestJS structure:
+
+```text
+Client
+  |
+  v
+REST API
+  |
+  +----------------------+
+  |      NestJS App      |
+  |                      |
+  |  Auth                |
+  |  Students            |
+  |  Classes             |
+  |  Attendance          |
+  |  Users / Roles       |
+  |                      |
+  +----------+-----------+
+             |
+             v
+        TypeORM
+             |
+             v
+        PostgreSQL
 ```
 
-## Compile and run the project
+### Authentication flow
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```text
+Client
+  |
+  v
+Login / Register
+  |
+  v
+Auth Controller
+  |
+  v
+Auth Service
+  |
+  +--> Credential validation
+  +--> Password handling
+  +--> JWT generation
+  +--> OAuth integration
+  |
+  v
+JWT-protected endpoints
 ```
 
-## Run tests
+## Project structure
 
-```bash
-# unit tests
-$ npm run test
+The main application lives in the `school-mgt` directory and follows NestJS conventions. Feature modules contain their own controllers, services, DTOs and entities where appropriate.
 
-# e2e tests
-$ npm run test:e2e
+A simplified view is:
 
-# test coverage
-$ npm run test:cov
+```text
+school-mgt/
+├── src/
+│   ├── auth/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── dto/
+│   │   ├── entities/
+│   │   ├── guards/
+│   │   └── strategies/
+│   ├── student/
+│   ├── classes/
+│   ├── attendance/
+│   └── ...
+├── test/
+├── package.json
+└── tsconfig.json
 ```
 
-## Deployment
+## Data model
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+The backend uses PostgreSQL with TypeORM entities and relationships. The domain includes relationships between users, students, classes and attendance records.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+A simplified domain model is:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```text
+User
+ |
+ +---- authentication / authorization
+ |
+ +---- Student
+          |
+          +---- Class
+          |
+          +---- Attendance
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The exact entity relationships should be treated as implementation details and can evolve as additional academic modules are introduced.
 
-## Resources
+## Authentication & authorization
 
-Check out a few resources that may come in handy when working with NestJS:
+The authentication layer provides the foundation for securing school-management resources.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Implemented concepts include:
 
-## Support
+- Registration
+- Login
+- JWT authentication
+- Authentication guards
+- Role decorators/guards
+- Password changes
+- Profile updates
+- Google OAuth authentication
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Sensitive routes can therefore be protected before requests reach application business logic.
 
-## Stay in touch
+## Validation and error handling
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The project uses NestJS's DTO-oriented approach to define and validate incoming request data. This keeps API contracts explicit and helps prevent invalid data from reaching business logic or the database.
+
+## Testing
+
+The project is configured for both unit and end-to-end testing.
+
+```bash
+npm run test
+npm run test:watch
+npm run test:cov
+npm run test:e2e
+```
+
+## Installation
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL
+- npm
+- Git
+
+### Clone
+
+```bash
+git clone https://github.com/Oluwatobi843/school-management-backend.git
+cd school-management-backend/school-mgt
+```
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Environment variables
+
+Create a `.env` file containing the database and authentication configuration required by the application. Do not commit real credentials or secrets to GitHub.
+
+Example structure:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
+JWT_SECRET=your-secret
+```
+
+Use the variables expected by the current application configuration when deploying or running the project.
+
+## Running the application
+
+### Development
+
+```bash
+npm run start:dev
+```
+
+### Production build
+
+```bash
+npm run build
+npm run start:prod
+```
+
+## Code quality
+
+Format the code with:
+
+```bash
+npm run format
+```
+
+Run linting with:
+
+```bash
+npm run lint
+```
+
+## API development approach
+
+The backend follows a REST-oriented approach where:
+
+1. Controllers receive HTTP requests.
+2. DTOs define and validate request data.
+3. Guards and authentication mechanisms protect restricted resources.
+4. Services contain business logic.
+5. TypeORM entities represent persistent domain models.
+6. PostgreSQL stores relational data.
+
+This separation makes individual modules easier to test, maintain and extend.
+
+## Security considerations
+
+The project is designed around several backend security practices:
+
+- Passwords should never be stored as plain text.
+- JWT secrets must be provided through environment configuration.
+- Protected routes should use authentication/authorization guards.
+- Input should be validated through DTOs.
+- Production credentials must remain outside the repository.
+- OAuth credentials should be supplied through environment variables.
+
+## Roadmap
+
+Potential future improvements include:
+
+- Swagger/OpenAPI documentation for every endpoint
+- Refresh-token rotation and session management
+- More granular role/permission policies
+- Teacher and parent portals
+- Subjects and academic-term management
+- Examination and grading modules
+- Timetable management
+- Fee/payment management
+- Notifications
+- Audit logs
+- Docker-based development/deployment
+- CI/CD pipeline
+- Production monitoring and logging
+
+## Why this project matters
+
+This project demonstrates practical backend engineering with a structured framework rather than a single-file API. It combines **NestJS modular architecture, TypeScript, relational database design, authentication, authorization, validation and automated testing**.
+
+It is intended as a foundation that can grow into a complete school-management platform.
+
+## Author
+
+**Oluwatobi843**
+
+GitHub: https://github.com/Oluwatobi843
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+See the repository license for the applicable terms.
