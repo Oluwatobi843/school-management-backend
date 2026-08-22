@@ -103,7 +103,7 @@ export class ParentsService {
 
     if (query.isActive !== undefined) {
       queryBuilder.andWhere(
-        'parent.isActive = :isActive',
+        'parent.isActive = :isActive',   
         {
           isActive: query.isActive === 'true',
         },
