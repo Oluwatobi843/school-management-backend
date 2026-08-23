@@ -17,6 +17,9 @@ import { ParentStudent } from './entities/parent-student.entity';
 import { Student } from '../student/entities/student.entity';
 import { LinkParentStudentDto } from './dto/link-parent-student.dto';
 
+
+
+
 @Injectable()
 export class ParentsService {
   private readonly logger = new Logger(ParentsService.name);
@@ -24,6 +27,12 @@ export class ParentsService {
   constructor(
     @InjectRepository(Parent)
     private readonly parentRepo: Repository<Parent>,
+
+    @InjectRepository(ParentStudent)
+  private readonly parentStudentRepo: Repository<ParentStudent>,
+
+    @InjectRepository(Student)
+    private readonly studentRepo: Repository<Student>,
   ) {}
 
   
@@ -209,6 +218,7 @@ export class ParentsService {
       );
     }
   }
+  
 
   
   // DELETE PARENT
@@ -243,4 +253,173 @@ export class ParentsService {
       );
     }
   }
+
+
+
+// GET STUDENTS FOR PARENT
+
+
+async getStudents(parentId: number) {
+  const parent = await this.parentRepo.findOne({
+    where: { id: parentId },
+  });
+
+  if (!parent) {
+    throw new NotFoundException(
+      `Parent with ID ${parentId} not found.`,
+    );
+  }
+
+  const relationships =
+    await this.parentStudentRepo.find({
+      where: {
+        parent: {
+          id: parentId,
+        },
+      },
+      relations: {
+        student: true,
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+
+  return {
+    success: true,
+    message: 'Parent students retrieved successfully.',
+    data: relationships,
+  };
+}
+
+
+// GET ONE PARENT-STUDENT
+// RELATIONSHIP
+
+
+async getStudentRelationship(
+  parentId: number,
+  studentId: number,
+) {
+  const relationship =
+    await this.parentStudentRepo.findOne({
+      where: {
+        parent: {
+          id: parentId,
+        },
+        student: {
+          id: studentId,
+        },
+      },
+      relations: {
+        parent: true,
+        student: true,
+      },
+    });
+
+  if (!relationship) {
+    throw new NotFoundException(
+      'Parent-student relationship not found.',
+    );
+  }
+
+  return {
+    success: true,
+    message: 'Parent-student relationship retrieved successfully.',
+    data: relationship,
+  };
+}
+
+
+// UPDATE RELATIONSHIP
+
+
+async updateStudentRelationship(
+  parentId: number,
+  studentId: number,
+  dto: LinkParentStudentDto,
+) {
+  const relationship =
+    await this.parentStudentRepo.findOne({
+      where: {
+        parent: {
+          id: parentId,
+        },
+        student: {
+          id: studentId,
+        },
+      },
+    });
+
+  if (!relationship) {
+    throw new NotFoundException(
+      'Parent-student relationship not found.',
+    );
+  }
+
+  if (dto.studentId !== studentId) {
+    throw new ConflictException(
+      'The studentId in the body does not match the student ID in the URL.',
+    );
+  }
+
+  relationship.relationship = dto.relationship;
+
+  relationship.isPrimaryContact =
+    dto.isPrimaryContact ??
+    relationship.isPrimaryContact;
+
+  relationship.isEmergencyContact =
+    dto.isEmergencyContact ??
+    relationship.isEmergencyContact;
+
+  const updated =
+    await this.parentStudentRepo.save(
+      relationship,
+    );
+
+  return {
+    success: true,
+    message: 'Parent-student relationship updated successfully.',
+    data: updated,
+  };
+}
+
+
+// UNLINK STUDENT
+
+
+async unlinkStudent(
+  parentId: number,
+  studentId: number,
+) {
+  const relationship =
+    await this.parentStudentRepo.findOne({
+      where: {
+        parent: {
+          id: parentId,
+        },
+        student: {
+          id: studentId,
+        },
+      },
+    });
+
+  if (!relationship) {
+    throw new NotFoundException(
+      'Parent-student relationship not found.',
+    );
+  }
+
+  await this.parentStudentRepo.remove(
+    relationship,
+  );
+
+  return {
+    success: true,
+    message: 'Student unlinked from parent successfully.',
+  };
+
+}
+
 }
