@@ -13,6 +13,10 @@ import { CreateParentDto } from './dto/create-parent.dto';
 import { UpdateParentDto } from './dto/update-parent.dto';
 import { QueryParentDto } from './dto/query-parent.dto';
 
+import { ParentStudent } from './entities/parent-student.entity';
+import { Student } from '../student/entities/student.entity';
+import { LinkParentStudentDto } from './dto/link-parent-student.dto';
+
 @Injectable()
 export class ParentsService {
   private readonly logger = new Logger(ParentsService.name);
