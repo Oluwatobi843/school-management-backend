@@ -422,4 +422,85 @@ async unlinkStudent(
 
 }
 
+// LINK STUDENT TO PARENT
+
+async linkStudent(
+  parentId: number,
+  dto: LinkParentStudentDto,
+) {
+  const parent = await this.parentRepo.findOne({
+    where: { id: parentId },
+  });
+
+  if (!parent) {
+    throw new NotFoundException(
+      `Parent with ID ${parentId} not found.`,
+    );
+  }
+
+  const student = await this.studentRepo.findOne({
+    where: { id: dto.studentId },
+  });
+
+  if (!student) {
+    throw new NotFoundException(
+      `Student with ID ${dto.studentId} not found.`,
+    );
+  }
+
+  // Check if relationship already exists
+  const existingRelationship =
+    await this.parentStudentRepo.findOne({
+      where: {
+        parent: {
+          id: parentId,
+        },
+        student: {
+          id: dto.studentId,
+        },
+      },
+    });
+
+  if (existingRelationship) {
+    throw new ConflictException(
+      'This parent is already linked to this student.',
+    );
+  }
+
+  try {
+    const relationship =
+      this.parentStudentRepo.create({
+        parent,
+        student,
+        relationship: dto.relationship,
+        isPrimaryContact:
+          dto.isPrimaryContact ?? false,
+        isEmergencyContact:
+          dto.isEmergencyContact ?? false,
+      });
+
+    const savedRelationship =
+      await this.parentStudentRepo.save(
+        relationship,
+      );
+
+    return {
+      success: true,
+      message: 'Parent linked to student successfully.',
+      data: savedRelationship,
+    };
+  } catch (error: unknown) {
+    this.logger.error(
+      'Failed to link parent to student.',
+      error instanceof Error
+        ? error.stack
+        : String(error),
+    );
+
+    throw new InternalServerErrorException(
+      'Failed to link parent to student.',
+    );
+  }
+}
+
 }
