@@ -12,9 +12,11 @@ import {
 } from '@nestjs/common';
 
 import { ParentsService } from './parents.service';
+
 import { CreateParentDto } from './dto/create-parent.dto';
 import { UpdateParentDto } from './dto/update-parent.dto';
 import { QueryParentDto } from './dto/query-parent.dto';
+import { LinkParentStudentDto } from './dto/link-parent-student.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -48,7 +50,7 @@ export class ParentsController {
     return this.parentsService.findAll(query);
   }
 
-
+  
   // GET PARENT BY ID
   
 
@@ -74,8 +76,86 @@ export class ParentsController {
   }
 
   
-  // DELETE PARENT
+  // LINK STUDENT TO PARENT
+ 
+
+  @Post(':id/students')
+  @Roles(UserRole.ADMIN)
+  linkStudent(
+    @Param('id', ParseIntPipe) parentId: number,
+    @Body() dto: LinkParentStudentDto,
+  ) {
+    return this.parentsService.linkStudent(
+      parentId,
+      dto,
+    );
+  }
+
   
+  // GET PARENT'S STUDENTS
+  
+
+  @Get(':id/students')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  getStudents(
+    @Param('id', ParseIntPipe) parentId: number,
+  ) {
+    return this.parentsService.getStudents(parentId);
+  }
+
+  
+  // GET ONE PARENT-STUDENT RELATIONSHIP
+ 
+
+  @Get(':id/students/:studentId')
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
+  getStudentRelationship(
+    @Param('id', ParseIntPipe) parentId: number,
+    @Param('studentId', ParseIntPipe) studentId: number,
+  ) {
+    return this.parentsService.getStudentRelationship(
+      parentId,
+      studentId,
+    );
+  }
+
+  
+  // UPDATE PARENT-STUDENT RELATIONSHIP
+ 
+
+  @Patch(':id/students/:studentId')
+  @Roles(UserRole.ADMIN)
+  updateStudentRelationship(
+    @Param('id', ParseIntPipe) parentId: number,
+    @Param('studentId', ParseIntPipe) studentId: number,
+    @Body() dto: LinkParentStudentDto,
+  ) {
+    return this.parentsService.updateStudentRelationship(
+      parentId,
+      studentId,
+      dto,
+    );
+  }
+
+  
+  // UNLINK STUDENT FROM PARENT
+ 
+
+  @Delete(':id/students/:studentId')
+  @Roles(UserRole.ADMIN)
+  unlinkStudent(
+    @Param('id', ParseIntPipe) parentId: number,
+    @Param('studentId', ParseIntPipe) studentId: number,
+  ) {
+    return this.parentsService.unlinkStudent(
+      parentId,
+      studentId,
+    );
+  }
+
+ 
+  // DELETE PARENT
+
 
   @Delete(':id')
   @Roles(UserRole.ADMIN)
@@ -85,4 +165,3 @@ export class ParentsController {
     return this.parentsService.remove(id);
   }
 }
-
