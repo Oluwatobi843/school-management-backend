@@ -105,7 +105,6 @@ export class ParentsController {
 
   
   // GET ONE PARENT-STUDENT RELATIONSHIP
- 
 
   @Get(':id/students/:studentId')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
@@ -122,7 +121,6 @@ export class ParentsController {
   
   // UPDATE PARENT-STUDENT RELATIONSHIP
  
-
   @Patch(':id/students/:studentId')
   @Roles(UserRole.ADMIN)
   updateStudentRelationship(
@@ -139,7 +137,6 @@ export class ParentsController {
 
   
   // UNLINK STUDENT FROM PARENT
- 
 
   @Delete(':id/students/:studentId')
   @Roles(UserRole.ADMIN)
@@ -154,14 +151,5 @@ export class ParentsController {
   }
 
  
-  // DELETE PARENT
-
-
-  @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.parentsService.remove(id);
-  }
+ 
 }
