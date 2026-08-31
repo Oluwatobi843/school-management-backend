@@ -136,20 +136,6 @@ export class ParentsController {
   }
 
   
-  // UNLINK STUDENT FROM PARENT
 
-  @Delete(':id/students/:studentId')
-  @Roles(UserRole.ADMIN)
-  unlinkStudent(
-    @Param('id', ParseIntPipe) parentId: number,
-    @Param('studentId', ParseIntPipe) studentId: number,
-  ) {
-    return this.parentsService.unlinkStudent(
-      parentId,
-      studentId,
-    );
-  }
-
- 
  
 }
