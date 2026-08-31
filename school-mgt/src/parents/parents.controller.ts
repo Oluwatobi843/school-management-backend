@@ -151,13 +151,5 @@ export class ParentsController {
   }
 
  
-  // DELETE PARENT
-
-  @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.parentsService.remove(id);
-  }
+ 
 }
