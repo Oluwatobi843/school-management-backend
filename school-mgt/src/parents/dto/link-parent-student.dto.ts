@@ -1,11 +1,4 @@
-
-import {
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
 
 import { ParentRelationship } from '../entities/parent-student.entity';
 

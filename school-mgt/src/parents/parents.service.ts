@@ -17,9 +17,6 @@ import { ParentStudent } from './entities/parent-student.entity';
 import { Student } from '../student/entities/student.entity';
 import { LinkParentStudentDto } from './dto/link-parent-student.dto';
 
-
-
-
 @Injectable()
 export class ParentsService {
   private readonly logger = new Logger(ParentsService.name);
@@ -29,15 +26,13 @@ export class ParentsService {
     private readonly parentRepo: Repository<Parent>,
 
     @InjectRepository(ParentStudent)
-  private readonly parentStudentRepo: Repository<ParentStudent>,
+    private readonly parentStudentRepo: Repository<ParentStudent>,
 
     @InjectRepository(Student)
     private readonly studentRepo: Repository<Student>,
   ) {}
 
-  
   // HELPER: CHECK EMAIL
-  
 
   private async validateEmail(
     email: string,
@@ -49,15 +44,11 @@ export class ParentsService {
     });
 
     if (existingParent && existingParent.id !== excludeId) {
-      throw new ConflictException(
-        'A parent with this email already exists.',
-      );
+      throw new ConflictException('A parent with this email already exists.');
     }
   }
 
-  
   // CREATE PARENT
-  
 
   async create(dto: CreateParentDto) {
     await this.validateEmail(dto.email);
@@ -81,15 +72,11 @@ export class ParentsService {
         error instanceof Error ? error.stack : String(error),
       );
 
-      throw new InternalServerErrorException(
-        'Failed to create parent.',
-      );
+      throw new InternalServerErrorException('Failed to create parent.');
     }
   }
 
-  
   // GET ALL PARENTS
-  
 
   async findAll(query: QueryParentDto) {
     const page = Number(query.page) || 1;
@@ -97,8 +84,7 @@ export class ParentsService {
 
     const skip = (page - 1) * limit;
 
-    const queryBuilder =
-      this.parentRepo.createQueryBuilder('parent');
+    const queryBuilder = this.parentRepo.createQueryBuilder('parent');
 
     if (query.search) {
       queryBuilder.andWhere(
@@ -115,21 +101,14 @@ export class ParentsService {
     }
 
     if (query.isActive !== undefined) {
-      queryBuilder.andWhere(
-        'parent.isActive = :isActive',   
-        {
-          isActive: query.isActive === 'true',
-        },
-      );
+      queryBuilder.andWhere('parent.isActive = :isActive', {
+        isActive: query.isActive === 'true',
+      });
     }
 
-    queryBuilder
-      .orderBy('parent.createdAt', 'DESC')
-      .skip(skip)
-      .take(limit);
+    queryBuilder.orderBy('parent.createdAt', 'DESC').skip(skip).take(limit);
 
-    const [parents, total] =
-      await queryBuilder.getManyAndCount();
+    const [parents, total] = await queryBuilder.getManyAndCount();
 
     return {
       success: true,
@@ -144,9 +123,7 @@ export class ParentsService {
     };
   }
 
-  
   // GET PARENT BY ID
-  
 
   async findOne(id: number) {
     const parent = await this.parentRepo.findOne({
@@ -154,9 +131,7 @@ export class ParentsService {
     });
 
     if (!parent) {
-      throw new NotFoundException(
-        `Parent with ID ${id} not found.`,
-      );
+      throw new NotFoundException(`Parent with ID ${id} not found.`);
     }
 
     return {
@@ -166,41 +141,28 @@ export class ParentsService {
     };
   }
 
- 
   // UPDATE PARENT
-  
 
-  async update(
-    id: number,
-    dto: UpdateParentDto,
-  ) {
+  async update(id: number, dto: UpdateParentDto) {
     const parent = await this.parentRepo.findOne({
       where: { id },
     });
 
     if (!parent) {
-      throw new NotFoundException(
-        `Parent with ID ${id} not found.`,
-      );
+      throw new NotFoundException(`Parent with ID ${id} not found.`);
     }
 
-    if (
-      dto.email &&
-      dto.email.toLowerCase() !== parent.email
-    ) {
+    if (dto.email && dto.email.toLowerCase() !== parent.email) {
       await this.validateEmail(dto.email, id);
     }
 
     Object.assign(parent, {
       ...dto,
-      email: dto.email
-        ? dto.email.toLowerCase()
-        : parent.email,
+      email: dto.email ? dto.email.toLowerCase() : parent.email,
     });
 
     try {
-      const updatedParent =
-        await this.parentRepo.save(parent);
+      const updatedParent = await this.parentRepo.save(parent);
 
       return {
         success: true,
@@ -213,16 +175,11 @@ export class ParentsService {
         error instanceof Error ? error.stack : String(error),
       );
 
-      throw new InternalServerErrorException(
-        'Failed to update parent.',
-      );
+      throw new InternalServerErrorException('Failed to update parent.');
     }
   }
-  
 
-  
   // DELETE PARENT
-  
 
   async remove(id: number) {
     const parent = await this.parentRepo.findOne({
@@ -230,9 +187,7 @@ export class ParentsService {
     });
 
     if (!parent) {
-      throw new NotFoundException(
-        `Parent with ID ${id} not found.`,
-      );
+      throw new NotFoundException(`Parent with ID ${id} not found.`);
     }
 
     try {
@@ -248,30 +203,22 @@ export class ParentsService {
         error instanceof Error ? error.stack : String(error),
       );
 
-      throw new InternalServerErrorException(
-        'Failed to delete parent.',
-      );
+      throw new InternalServerErrorException('Failed to delete parent.');
     }
   }
 
+  // GET STUDENTS FOR PARENT
 
+  async getStudents(parentId: number) {
+    const parent = await this.parentRepo.findOne({
+      where: { id: parentId },
+    });
 
-// GET STUDENTS FOR PARENT
+    if (!parent) {
+      throw new NotFoundException(`Parent with ID ${parentId} not found.`);
+    }
 
-
-async getStudents(parentId: number) {
-  const parent = await this.parentRepo.findOne({
-    where: { id: parentId },
-  });
-
-  if (!parent) {
-    throw new NotFoundException(
-      `Parent with ID ${parentId} not found.`,
-    );
-  }
-
-  const relationships =
-    await this.parentStudentRepo.find({
+    const relationships = await this.parentStudentRepo.find({
       where: {
         parent: {
           id: parentId,
@@ -285,24 +232,18 @@ async getStudents(parentId: number) {
       },
     });
 
-  return {
-    success: true,
-    message: 'Parent students retrieved successfully.',
-    data: relationships,
-  };
-}
+    return {
+      success: true,
+      message: 'Parent students retrieved successfully.',
+      data: relationships,
+    };
+  }
 
+  // GET ONE PARENT-STUDENT
+  // RELATIONSHIP
 
-// GET ONE PARENT-STUDENT
-// RELATIONSHIP
-
-
-async getStudentRelationship(
-  parentId: number,
-  studentId: number,
-) {
-  const relationship =
-    await this.parentStudentRepo.findOne({
+  async getStudentRelationship(parentId: number, studentId: number) {
+    const relationship = await this.parentStudentRepo.findOne({
       where: {
         parent: {
           id: parentId,
@@ -317,30 +258,25 @@ async getStudentRelationship(
       },
     });
 
-  if (!relationship) {
-    throw new NotFoundException(
-      'Parent-student relationship not found.',
-    );
+    if (!relationship) {
+      throw new NotFoundException('Parent-student relationship not found.');
+    }
+
+    return {
+      success: true,
+      message: 'Parent-student relationship retrieved successfully.',
+      data: relationship,
+    };
   }
 
-  return {
-    success: true,
-    message: 'Parent-student relationship retrieved successfully.',
-    data: relationship,
-  };
-}
+  // UPDATE RELATIONSHIP
 
-
-// UPDATE RELATIONSHIP
-
-
-async updateStudentRelationship(
-  parentId: number,
-  studentId: number,
-  dto: LinkParentStudentDto,
-) {
-  const relationship =
-    await this.parentStudentRepo.findOne({
+  async updateStudentRelationship(
+    parentId: number,
+    studentId: number,
+    dto: LinkParentStudentDto,
+  ) {
+    const relationship = await this.parentStudentRepo.findOne({
       where: {
         parent: {
           id: parentId,
@@ -351,50 +287,37 @@ async updateStudentRelationship(
       },
     });
 
-  if (!relationship) {
-    throw new NotFoundException(
-      'Parent-student relationship not found.',
-    );
+    if (!relationship) {
+      throw new NotFoundException('Parent-student relationship not found.');
+    }
+
+    if (dto.studentId !== studentId) {
+      throw new ConflictException(
+        'The studentId in the body does not match the student ID in the URL.',
+      );
+    }
+
+    relationship.relationship = dto.relationship;
+
+    relationship.isPrimaryContact =
+      dto.isPrimaryContact ?? relationship.isPrimaryContact;
+
+    relationship.isEmergencyContact =
+      dto.isEmergencyContact ?? relationship.isEmergencyContact;
+
+    const updated = await this.parentStudentRepo.save(relationship);
+
+    return {
+      success: true,
+      message: 'Parent-student relationship updated successfully.',
+      data: updated,
+    };
   }
 
-  if (dto.studentId !== studentId) {
-    throw new ConflictException(
-      'The studentId in the body does not match the student ID in the URL.',
-    );
-  }
+  // UNLINK STUDENT
 
-  relationship.relationship = dto.relationship;
-
-  relationship.isPrimaryContact =
-    dto.isPrimaryContact ??
-    relationship.isPrimaryContact;
-
-  relationship.isEmergencyContact =
-    dto.isEmergencyContact ??
-    relationship.isEmergencyContact;
-
-  const updated =
-    await this.parentStudentRepo.save(
-      relationship,
-    );
-
-  return {
-    success: true,
-    message: 'Parent-student relationship updated successfully.',
-    data: updated,
-  };
-}
-
-
-// UNLINK STUDENT
-
-
-async unlinkStudent(
-  parentId: number,
-  studentId: number,
-) {
-  const relationship =
-    await this.parentStudentRepo.findOne({
+  async unlinkStudent(parentId: number, studentId: number) {
+    const relationship = await this.parentStudentRepo.findOne({
       where: {
         parent: {
           id: parentId,
@@ -405,52 +328,41 @@ async unlinkStudent(
       },
     });
 
-  if (!relationship) {
-    throw new NotFoundException(
-      'Parent-student relationship not found.',
-    );
+    if (!relationship) {
+      throw new NotFoundException('Parent-student relationship not found.');
+    }
+
+    await this.parentStudentRepo.remove(relationship);
+
+    return {
+      success: true,
+      message: 'Student unlinked from parent successfully.',
+    };
   }
 
-  await this.parentStudentRepo.remove(
-    relationship,
-  );
+  // LINK STUDENT TO PARENT
 
-  return {
-    success: true,
-    message: 'Student unlinked from parent successfully.',
-  };
+  async linkStudent(parentId: number, dto: LinkParentStudentDto) {
+    const parent = await this.parentRepo.findOne({
+      where: { id: parentId },
+    });
 
-}
+    if (!parent) {
+      throw new NotFoundException(`Parent with ID ${parentId} not found.`);
+    }
 
-// LINK STUDENT TO PARENT
+    const student = await this.studentRepo.findOne({
+      where: { id: dto.studentId },
+    });
 
-async linkStudent(
-  parentId: number,
-  dto: LinkParentStudentDto,
-) {
-  const parent = await this.parentRepo.findOne({
-    where: { id: parentId },
-  });
+    if (!student) {
+      throw new NotFoundException(
+        `Student with ID ${dto.studentId} not found.`,
+      );
+    }
 
-  if (!parent) {
-    throw new NotFoundException(
-      `Parent with ID ${parentId} not found.`,
-    );
-  }
-
-  const student = await this.studentRepo.findOne({
-    where: { id: dto.studentId },
-  });
-
-  if (!student) {
-    throw new NotFoundException(
-      `Student with ID ${dto.studentId} not found.`,
-    );
-  }
-
-  // Check if relationship already exists
-  const existingRelationship =
-    await this.parentStudentRepo.findOne({
+    // Check if relationship already exists
+    const existingRelationship = await this.parentStudentRepo.findOne({
       where: {
         parent: {
           id: parentId,
@@ -461,46 +373,37 @@ async linkStudent(
       },
     });
 
-  if (existingRelationship) {
-    throw new ConflictException(
-      'This parent is already linked to this student.',
-    );
-  }
+    if (existingRelationship) {
+      throw new ConflictException(
+        'This parent is already linked to this student.',
+      );
+    }
 
-  try {
-    const relationship =
-      this.parentStudentRepo.create({
+    try {
+      const relationship = this.parentStudentRepo.create({
         parent,
         student,
         relationship: dto.relationship,
-        isPrimaryContact:
-          dto.isPrimaryContact ?? false,
-        isEmergencyContact:
-          dto.isEmergencyContact ?? false,
+        isPrimaryContact: dto.isPrimaryContact ?? false,
+        isEmergencyContact: dto.isEmergencyContact ?? false,
       });
 
-    const savedRelationship =
-      await this.parentStudentRepo.save(
-        relationship,
+      const savedRelationship = await this.parentStudentRepo.save(relationship);
+
+      return {
+        success: true,
+        message: 'Parent linked to student successfully.',
+        data: savedRelationship,
+      };
+    } catch (error: unknown) {
+      this.logger.error(
+        'Failed to link parent to student.',
+        error instanceof Error ? error.stack : String(error),
       );
 
-    return {
-      success: true,
-      message: 'Parent linked to student successfully.',
-      data: savedRelationship,
-    };
-  } catch (error: unknown) {
-    this.logger.error(
-      'Failed to link parent to student.',
-      error instanceof Error
-        ? error.stack
-        : String(error),
-    );
-
-    throw new InternalServerErrorException(
-      'Failed to link parent to student.',
-    );
+      throw new InternalServerErrorException(
+        'Failed to link parent to student.',
+      );
+    }
   }
-}
-
 }

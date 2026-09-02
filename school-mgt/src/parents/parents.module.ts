@@ -9,13 +9,7 @@ import { ParentStudent } from './entities/parent-student.entity';
 import { Student } from '../student/entities/student.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Parent,
-      ParentStudent,
-      Student,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Parent, ParentStudent, Student])],
   controllers: [ParentsController],
   providers: [ParentsService],
   exports: [ParentsService],

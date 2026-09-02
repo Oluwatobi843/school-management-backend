@@ -1,4 +1,3 @@
-
 import {
   IsEmail,
   IsNotEmpty,
@@ -45,4 +44,3 @@ export class CreateParentDto {
   @MaxLength(150)
   occupation?: string;
 }
-

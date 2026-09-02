@@ -27,4 +27,3 @@ export class QueryParentDto {
   @IsBooleanString()
   isActive?: string;
 }
-
