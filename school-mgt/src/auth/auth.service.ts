@@ -4,11 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  AuthProvider,
-  User,
-  UserRole,
-} from './entities/user.entity';
+import { AuthProvider, User, UserRole } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
@@ -28,7 +24,7 @@ export class AuthService {
   // Helper function
 
   private sanitizeUser(user: User) {
-    const { password, ...safeUser } = user;
+    const { password: _password, ...safeUser } = user;
     return safeUser;
   }
 
@@ -91,10 +87,7 @@ export class AuthService {
       );
     }
 
-    const isMatch = await bcrypt.compare(
-      dto.password,
-      user.password,
-    );
+    const isMatch = await bcrypt.compare(dto.password, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
@@ -123,9 +116,7 @@ export class AuthService {
 
     if (user) {
       if (!user.isActive) {
-        throw new UnauthorizedException(
-          'Account is disabled',
-        );
+        throw new UnauthorizedException('Account is disabled');
       }
 
       return {
@@ -149,15 +140,15 @@ export class AuthService {
 
     // Create new Google user
 
-  user = this.userRepo.create({
-  firstName: googleUser.firstName,
-  lastName: googleUser.lastName,
-  email: googleUser.email,
-  googleId: googleUser.googleId,
-  role: UserRole.STUDENT,
-  authProvider: AuthProvider.GOOGLE,
-  isActive: true,
-});
+    user = this.userRepo.create({
+      firstName: googleUser.firstName,
+      lastName: googleUser.lastName,
+      email: googleUser.email,
+      googleId: googleUser.googleId,
+      role: UserRole.STUDENT,
+      authProvider: AuthProvider.GOOGLE,
+      isActive: true,
+    });
 
     const savedUser = await this.userRepo.save(user);
 
@@ -184,10 +175,7 @@ export class AuthService {
 
   // UPDATE PROFILE
 
-  async updateProfile(
-    userId: number,
-    dto: UpdateProfileDto,
-  ) {
+  async updateProfile(userId: number, dto: UpdateProfileDto) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });
@@ -202,20 +190,11 @@ export class AuthService {
       });
 
       if (existing) {
-        throw new BadRequestException(
-          'Email already exists',
-        );
+        throw new BadRequestException('Email already exists');
       }
     }
 
     const updateData: Partial<User> = { ...dto };
-
-    if (dto.password) {
-      updateData.password = await bcrypt.hash(
-        dto.password,
-        10,
-      );
-    }
 
     Object.assign(user, updateData);
 
@@ -229,10 +208,7 @@ export class AuthService {
 
   // CHANGE PASSWORD
 
-  async changePassword(
-    userId: number,
-    dto: ChangePasswordDto,
-  ) {
+  async changePassword(userId: number, dto: ChangePasswordDto) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });
@@ -248,21 +224,13 @@ export class AuthService {
       );
     }
 
-    const isMatch = await bcrypt.compare(
-      dto.currentPassword,
-      user.password,
-    );
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
 
     if (!isMatch) {
-      throw new UnauthorizedException(
-        'Current password is incorrect',
-      );
+      throw new UnauthorizedException('Current password is incorrect');
     }
 
-    user.password = await bcrypt.hash(
-      dto.newPassword,
-      10,
-    );
+    user.password = await bcrypt.hash(dto.newPassword, 10);
 
     await this.userRepo.save(user);
 
@@ -271,4 +239,3 @@ export class AuthService {
     };
   }
 }
-

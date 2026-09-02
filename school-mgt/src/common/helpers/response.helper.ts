@@ -1,9 +1,5 @@
 export class ResponseHelper {
-  static success(
-    message: string,
-    data: unknown = null,
-    meta?: unknown,
-  ) {
+  static success(message: string, data: unknown = null, meta?: unknown) {
     return {
       success: true,
       message,

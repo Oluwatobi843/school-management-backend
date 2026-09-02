@@ -6,12 +6,12 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   ManyToOne,
 } from 'typeorm';
 
 import { Class } from '../../classes/entities/class.entity';
-
-import { User } from 'src/auth/entities/user.entity';
+import { User } from '../../auth/entities/user.entity';
 
 @Entity('students')
 export class Student {
@@ -27,12 +27,11 @@ export class Student {
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
-@ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
-  eager: true,
-  nullable: true,
-})
-@JoinColumn({ name: 'classId' })
-class?: Class;
+  @ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'classId' })
+  class?: Class;
 
   @Column({ nullable: true })
   phoneNumber!: string;
@@ -40,8 +39,7 @@ class?: Class;
   @Column({ nullable: true })
   address!: string;
 
-  //  RELATION ONLY (NO manual userId column)
-  @OneToOne(() => User, { eager: true })
+  @OneToOne(() => User)
   @JoinColumn()
   user!: User;
 
@@ -50,4 +48,7 @@ class?: Class;
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

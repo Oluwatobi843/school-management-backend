@@ -7,19 +7,20 @@ import {
   Delete,
   Param,
   ParseIntPipe,
-  Req,
-  UseGuards,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { UserRole } from 'src/auth/entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../auth/entities/user.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('students')
@@ -32,21 +33,17 @@ export class StudentController {
   @Post()
   create(
     @Body() dto: CreateStudentDto,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.studentService.create(dto, req.user.sub);
+    return this.studentService.create(dto, user.sub ?? user.id);
   }
 
   // GET ALL STUDENTS (ADMIN + TEACHER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Get()
-  findAll(@Query('page') page: string, 
-    @Query('limit') limit: string) {
-    return this.studentService.findAll(
-       Number(page) || 1,
-    Number(limit) || 10,
-    );
+  findAll(@Query('page') page: string, @Query('limit') limit: string) {
+    return this.studentService.findAll(Number(page) || 1, Number(limit) || 10);
   }
 
   // GET STUDENT BY ADMISSION NUMBER
@@ -54,9 +51,7 @@ export class StudentController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   @Get('admission/:admissionNumber')
-  findByAdmissionNumber(
-    @Param('admissionNumber') admissionNumber: string,
-  ) {
+  findByAdmissionNumber(@Param('admissionNumber') admissionNumber: string) {
     return this.studentService.findByAdmissionNumber(admissionNumber);
   }
 
@@ -67,19 +62,16 @@ export class StudentController {
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.studentService.findOne(id, req.user);
+    return this.studentService.findOne(id, user);
   }
 
   // UPDATE STUDENT (ADMIN ONLY)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateStudentDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStudentDto) {
     return this.studentService.update(id, dto);
   }
 
@@ -87,9 +79,7 @@ export class StudentController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Delete(':id')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.studentService.remove(id);
   }
 }

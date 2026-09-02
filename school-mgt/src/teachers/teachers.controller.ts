@@ -26,9 +26,7 @@ import { AssignSubjectsDto } from './dto/assign-subjects.dto';
 @Roles(UserRole.ADMIN)
 @Controller('teachers')
 export class TeachersController {
-  constructor(
-    private readonly teachersService: TeachersService,
-  ) {}
+  constructor(private readonly teachersService: TeachersService) {}
 
   // Create a new teacher
   @Post()
@@ -50,24 +48,15 @@ export class TeachersController {
 
   // Update a teacher
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateTeacherDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateTeacherDto) {
     return this.teachersService.update(id, dto);
   }
 
   @Patch(':id/subjects')
-@Roles(UserRole.ADMIN)
-assignSubjects(
-  @Param('id') id: string,
-  @Body() dto: AssignSubjectsDto,
-) {
-  return this.teachersService.assignSubjects(
-    +id,
-    dto.subjectIds,
-  );
-}
+  @Roles(UserRole.ADMIN)
+  assignSubjects(@Param('id') id: string, @Body() dto: AssignSubjectsDto) {
+    return this.teachersService.assignSubjects(+id, dto.subjectIds);
+  }
 
   // Delete a teacher
   @Delete(':id')

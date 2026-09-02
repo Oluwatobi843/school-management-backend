@@ -9,17 +9,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import {
-  Attendance,
-} from './entities/attendance.entity';
-
-import {
-  AttendanceStatus,
-} from './entities/attendance.entity';
+import { Attendance } from './entities/attendance.entity';
 
 import { Student } from '../student/entities/student.entity';
 import { Class } from '../classes/entities/class.entity';
 import { User, UserRole } from '../auth/entities/user.entity';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
@@ -40,26 +35,17 @@ export class AttendanceService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  
   // CREATE ATTENDANCE
-  
 
-  async create(
-    dto: CreateAttendanceDto,
-    userId: number,
-  ) {
-   
+  async create(dto: CreateAttendanceDto, userId: number) {
     // Find the user recording attendance
-   
 
     const recorder = await this.userRepository.findOne({
       where: { id: userId },
     });
 
     if (!recorder) {
-      throw new UnauthorizedException(
-        'User not found',
-      );
+      throw new UnauthorizedException('User not found');
     }
 
     // Only ADMIN and TEACHER can record attendance
@@ -72,42 +58,30 @@ export class AttendanceService {
       );
     }
 
-    
     // Find student
-    
 
     const student = await this.studentRepository.findOne({
       where: { id: dto.studentId },
     });
 
     if (!student) {
-      throw new NotFoundException(
-        `Student with ID ${dto.studentId} not found`,
-      );
+      throw new NotFoundException(`Student with ID ${dto.studentId} not found`);
     }
 
-    
     // Find class
-    
 
     const schoolClass = await this.classRepository.findOne({
       where: { id: dto.classId },
     });
 
     if (!schoolClass) {
-      throw new NotFoundException(
-        `Class with ID ${dto.classId} not found`,
-      );
+      throw new NotFoundException(`Class with ID ${dto.classId} not found`);
     }
 
-    
     // Verify student belongs to class
-    
 
     if (!student.class) {
-      throw new BadRequestException(
-        'Student is not assigned to a class',
-      );
+      throw new BadRequestException('Student is not assigned to a class');
     }
 
     if (student.class.id !== schoolClass.id) {
@@ -116,19 +90,16 @@ export class AttendanceService {
       );
     }
 
-    
     // Check duplicate attendance
-    
 
-    const existingAttendance =
-      await this.attendanceRepository.findOne({
-        where: {
-          student: {
-            id: student.id,
-          },
-          date:  new Date(dto.date),
+    const existingAttendance = await this.attendanceRepository.findOne({
+      where: {
+        student: {
+          id: student.id,
         },
-      });
+        date: new Date(dto.date),
+      },
+    });
 
     if (existingAttendance) {
       throw new BadRequestException(
@@ -136,22 +107,18 @@ export class AttendanceService {
       );
     }
 
-    
     // Create attendance
-    
 
-    const attendance =
-      this.attendanceRepository.create({
-        student,
-        class: schoolClass,
-        date: new Date(dto.date),
-        status: dto.status,
-        remark: dto.remark,
-        recordedBy: recorder,
-      });
+    const attendance = this.attendanceRepository.create({
+      student,
+      class: schoolClass,
+      date: new Date(dto.date),
+      status: dto.status,
+      remark: dto.remark,
+      recordedBy: recorder,
+    });
 
-    const savedAttendance =
-      await this.attendanceRepository.save(attendance);
+    const savedAttendance = await this.attendanceRepository.save(attendance);
 
     return {
       message: 'Attendance recorded successfully',
@@ -159,25 +126,19 @@ export class AttendanceService {
     };
   }
 
-  
   // GET ALL ATTENDANCE
- 
 
-  async findAll(
-    page: number = 1,
-    limit: number = 10,
-  ) {
+  async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [attendance, total] =
-      await this.attendanceRepository.findAndCount({
-        skip,
-        take: limit,
-        order: {
-          date: 'DESC',
-          createdAt: 'DESC',
-        },
-      });
+    const [attendance, total] = await this.attendanceRepository.findAndCount({
+      skip,
+      take: limit,
+      order: {
+        date: 'DESC',
+        createdAt: 'DESC',
+      },
+    });
 
     return {
       message: 'Attendance fetched successfully',
@@ -186,27 +147,20 @@ export class AttendanceService {
         page,
         limit,
         total,
-        totalPages: Math.ceil(
-          total / limit,
-        ),
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
 
-  
   // GET ATTENDANCE BY ID
- 
 
   async findOne(id: number) {
-    const attendance =
-      await this.attendanceRepository.findOne({
-        where: { id },
-      });
+    const attendance = await this.attendanceRepository.findOne({
+      where: { id },
+    });
 
     if (!attendance) {
-      throw new NotFoundException(
-        `Attendance with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Attendance with ID ${id} not found`);
     }
 
     return {
@@ -215,36 +169,28 @@ export class AttendanceService {
     };
   }
 
-  
   // GET STUDENT ATTENDANCE
-  
 
-  async findByStudent(
-  studentId: number,
-  currentUser: any,
-) {
-  const student = await this.studentRepository.findOne({
-    where: { id: studentId },
-  });
+  async findByStudent(studentId: number, currentUser: AuthenticatedUser) {
+    const student = await this.studentRepository.findOne({
+      where: { id: studentId },
+    });
 
-  if (!student) {
-    throw new NotFoundException(
-      `Student with ID ${studentId} not found`,
-    );
-  }
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${studentId} not found`);
+    }
 
-  // STUDENT CAN ONLY VIEW THEIR OWN ATTENDANCE
-  if (
-    currentUser.role === UserRole.STUDENT &&
-    student.user.id !== currentUser.id
-  ) {
-    throw new ForbiddenException(
-      'You are not allowed to access this student attendance',
-    );
-  }
+    // STUDENT CAN ONLY VIEW THEIR OWN ATTENDANCE
+    if (
+      currentUser.role === UserRole.STUDENT &&
+      student.user.id !== currentUser.id
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to access this student attendance',
+      );
+    }
 
-  const attendance =
-    await this.attendanceRepository.find({
+    const attendance = await this.attendanceRepository.find({
       where: {
         student: {
           id: studentId,
@@ -255,39 +201,33 @@ export class AttendanceService {
       },
     });
 
-  return {
-    message: 'Student attendance fetched successfully',
-    data: attendance,
-  };
-}
+    return {
+      message: 'Student attendance fetched successfully',
+      data: attendance,
+    };
+  }
 
-  
   // GET CLASS ATTENDANCE
-  
 
   async findByClass(classId: number) {
-    const schoolClass =
-      await this.classRepository.findOne({
-        where: { id: classId },
-      });
+    const schoolClass = await this.classRepository.findOne({
+      where: { id: classId },
+    });
 
     if (!schoolClass) {
-      throw new NotFoundException(
-        `Class with ID ${classId} not found`,
-      );
+      throw new NotFoundException(`Class with ID ${classId} not found`);
     }
 
-    const attendance =
-      await this.attendanceRepository.find({
-        where: {
-          class: {
-            id: classId,
-          },
+    const attendance = await this.attendanceRepository.find({
+      where: {
+        class: {
+          id: classId,
         },
-        order: {
-          date: 'DESC',
-        },
-      });
+      },
+      order: {
+        date: 'DESC',
+      },
+    });
 
     return {
       message: 'Class attendance fetched successfully',
@@ -295,34 +235,23 @@ export class AttendanceService {
     };
   }
 
-  
   // UPDATE ATTENDANCE
-  
 
-  async update(
-    id: number,
-    dto: UpdateAttendanceDto,
-  ) {
-    const attendance =
-      await this.attendanceRepository.findOne({
-        where: { id },
-      });
+  async update(id: number, dto: UpdateAttendanceDto) {
+    const attendance = await this.attendanceRepository.findOne({
+      where: { id },
+    });
 
     if (!attendance) {
-      throw new NotFoundException(
-        `Attendance with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Attendance with ID ${id} not found`);
     }
 
-    
     // If student is changed
-    
 
     if (dto.studentId !== undefined) {
-      const student =
-        await this.studentRepository.findOne({
-          where: { id: dto.studentId },
-        });
+      const student = await this.studentRepository.findOne({
+        where: { id: dto.studentId },
+      });
 
       if (!student) {
         throw new NotFoundException(
@@ -333,43 +262,33 @@ export class AttendanceService {
       attendance.student = student;
     }
 
-    
     // If class is changed
-    
 
     if (dto.classId !== undefined) {
-      const schoolClass =
-        await this.classRepository.findOne({
-          where: { id: dto.classId },
-        });
+      const schoolClass = await this.classRepository.findOne({
+        where: { id: dto.classId },
+      });
 
       if (!schoolClass) {
-        throw new NotFoundException(
-          `Class with ID ${dto.classId} not found`,
-        );
+        throw new NotFoundException(`Class with ID ${dto.classId} not found`);
       }
 
       attendance.class = schoolClass;
     }
 
-    
     // Verify student belongs to class
-    
 
     if (
       attendance.student.class &&
       attendance.class &&
-      attendance.student.class.id !==
-        attendance.class.id
+      attendance.student.class.id !== attendance.class.id
     ) {
       throw new BadRequestException(
         'Student does not belong to the selected class',
       );
     }
 
-    
     // Update fields
-    
 
     if (dto.date !== undefined) {
       attendance.date = new Date(dto.date);
@@ -383,10 +302,7 @@ export class AttendanceService {
       attendance.remark = dto.remark;
     }
 
-    const updatedAttendance =
-      await this.attendanceRepository.save(
-        attendance,
-      );
+    const updatedAttendance = await this.attendanceRepository.save(attendance);
 
     return {
       message: 'Attendance updated successfully',
@@ -394,23 +310,18 @@ export class AttendanceService {
     };
   }
 
-  
   // DELETE ATTENDANCE
-  
 
   async remove(id: number) {
-    const attendance =
-      await this.attendanceRepository.findOne({
-        where: { id },
-      });
+    const attendance = await this.attendanceRepository.findOne({
+      where: { id },
+    });
 
     if (!attendance) {
-      throw new NotFoundException(
-        `Attendance with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Attendance with ID ${id} not found`);
     }
 
-    await this.attendanceRepository.delete(id);
+    await this.attendanceRepository.softDelete(id);
 
     return {
       message: 'Attendance deleted successfully',

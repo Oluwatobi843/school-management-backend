@@ -55,10 +55,7 @@ export class Class {
   })
   isActive!: boolean;
 
-  @OneToMany(
-    () => Student,
-    (student) => student.class,
-  )
+  @OneToMany(() => Student, (student) => student.class)
   students!: Student[];
 
   @CreateDateColumn()

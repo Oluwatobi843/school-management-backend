@@ -5,14 +5,15 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { Student } from './entities/student.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { User, UserRole } from 'src/auth/entities/user.entity';
+import { User, UserRole } from '../auth/entities/user.entity';
 import { Class } from '../classes/entities/class.entity';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
 @Injectable()
 export class StudentService {
@@ -25,6 +26,8 @@ export class StudentService {
 
     @InjectRepository(Class)
     private readonly classRepository: Repository<Class>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   private async findClassById(id: number): Promise<Class> {
@@ -62,36 +65,36 @@ export class StudentService {
     });
 
     if (existingStudent) {
-      throw new BadRequestException(
-        'Admission number already exists',
-      );
+      throw new BadRequestException('Admission number already exists');
     }
 
     const schoolClass = await this.findClassById(dto.classId);
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const savedStudent = await this.dataSource.transaction(async (manager) => {
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    const studentUser = this.userRepository.create({
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      email: dto.email,
-      password: hashedPassword,
-      role: UserRole.STUDENT,
+      const studentUser = manager.create(User, {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        email: dto.email,
+        password: hashedPassword,
+        role: UserRole.STUDENT,
+      });
+
+      const savedUser = await manager.save(User, studentUser);
+
+      const student = manager.create(Student, {
+        admissionNumber: dto.admissionNumber,
+        gender: dto.gender,
+        dateOfBirth: dto.dateOfBirth,
+        class: schoolClass,
+        phoneNumber: dto.phoneNumber,
+        address: dto.address,
+        user: savedUser,
+      });
+
+      return await manager.save(Student, student);
     });
-
-    const savedUser = await this.userRepository.save(studentUser);
-
-    const student = this.studentRepository.create({
-      admissionNumber: dto.admissionNumber,
-      gender: dto.gender,
-      dateOfBirth: dto.dateOfBirth,
-      class: schoolClass,
-      phoneNumber: dto.phoneNumber,
-      address: dto.address,
-      user: savedUser,
-    });
-
-    const savedStudent = await this.studentRepository.save(student);
 
     return {
       message: 'Student created successfully',
@@ -103,14 +106,14 @@ export class StudentService {
   async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const [students, total] =
-      await this.studentRepository.findAndCount({
-        skip,
-        take: limit,
-        order: {
-          createdAt: 'DESC',
-        },
-      });
+    const [students, total] = await this.studentRepository.findAndCount({
+      skip,
+      take: limit,
+      order: {
+        createdAt: 'DESC',
+      },
+      relations: ['user', 'class'],
+    });
 
     return {
       message: 'Students fetched successfully',
@@ -129,7 +132,7 @@ export class StudentService {
   async findByAdmissionNumber(admissionNumber: string) {
     const student = await this.studentRepository.findOne({
       where: { admissionNumber },
-      relations: ['user'],
+      relations: ['user', 'class'],
     });
 
     if (!student) {
@@ -144,16 +147,14 @@ export class StudentService {
 
   // GET SINGLE STUDENT
   // ADMIN + TEACHER + STUDENT
-  async findOne(id: number, currentUser: any) {
+  async findOne(id: number, currentUser: AuthenticatedUser) {
     const student = await this.studentRepository.findOne({
       where: { id },
-      relations: ['user'],
+      relations: ['user', 'class'],
     });
 
     if (!student) {
-      throw new NotFoundException(
-        `Student with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Student with ID ${id} not found`);
     }
 
     // STUDENT CAN ONLY VIEW HIS/HER OWN PROFILE
@@ -180,9 +181,7 @@ export class StudentService {
     });
 
     if (!student) {
-      throw new NotFoundException(
-        `Student with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Student with ID ${id} not found`);
     }
 
     const { classId, ...otherFields } = dto;
@@ -201,7 +200,7 @@ export class StudentService {
     };
   }
 
-  // DELETE STUDENT
+  // DELETE STUDENT (soft delete)
   // ADMIN ONLY
   async remove(id: number) {
     const student = await this.studentRepository.findOne({
@@ -209,12 +208,10 @@ export class StudentService {
     });
 
     if (!student) {
-      throw new NotFoundException(
-        `Student with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Student with ID ${id} not found`);
     }
 
-    await this.studentRepository.delete(id);
+    await this.studentRepository.softDelete(id);
 
     return {
       message: 'Student deleted successfully',

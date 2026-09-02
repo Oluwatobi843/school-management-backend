@@ -1,9 +1,4 @@
-import {
-  IsBooleanString,
-  IsEnum,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBooleanString, IsEnum, IsOptional, IsString } from 'class-validator';
 
 import { ClassLevel } from '../entities/class.entity';
 

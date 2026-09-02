@@ -1,4 +1,3 @@
-
 import {
   Column,
   CreateDateColumn,
@@ -68,13 +67,12 @@ export class Teacher {
   hireDate!: Date;
 
   @ManyToMany(() => Subject, (subject) => subject.teachers, {
-  eager: true,
-})
-@JoinTable({
-  name: 'teacher_subjects',
-})
-subjects!: Subject[];
-  
+    eager: true,
+  })
+  @JoinTable({
+    name: 'teacher_subjects',
+  })
+  subjects!: Subject[];
 
   @Column({
     nullable: true,
@@ -95,4 +93,3 @@ subjects!: Subject[];
   @DeleteDateColumn()
   deletedAt?: Date;
 }
-

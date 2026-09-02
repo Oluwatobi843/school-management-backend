@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { TeachersController } from './teachers.controller';
 import { Teacher } from './entities/teacher.entity';
-import { TypeOrmModule } from '@nestjs/typeorm/dist/typeorm.module';
-import { User } from 'src/auth/entities/user.entity';
-import { Subject } from 'src/subjects/entities/subject.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../auth/entities/user.entity';
+import { Subject } from '../subjects/entities/subject.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Teacher, User, Subject], )],
+  imports: [TypeOrmModule.forFeature([Teacher, User, Subject])],
   providers: [TeachersService],
-  controllers: [TeachersController]
+  controllers: [TeachersController],
 })
 export class TeachersModule {}

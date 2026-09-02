@@ -1,6 +1,5 @@
-
 import { Exclude } from 'class-transformer';
-import { Teacher } from 'src/teachers/entities/teacher.entity';
+import { Teacher } from '../../teachers/entities/teacher.entity';
 import {
   Column,
   CreateDateColumn,
@@ -82,4 +81,3 @@ export class User {
   @UpdateDateColumn()
   updatedAt!: Date;
 }
-

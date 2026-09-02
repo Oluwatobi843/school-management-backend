@@ -22,10 +22,4 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsEmail({}, { message: 'Please provide a valid email address' })
   email?: string;
-
-  @IsOptional()
-  @MinLength(10, {
-    message: 'Password must be at least 10 characters long for security',
-  })
-  password?: string;
 }

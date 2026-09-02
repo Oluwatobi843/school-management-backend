@@ -1,4 +1,3 @@
-
 import {
   IsDateString,
   IsEmail,
@@ -12,9 +11,7 @@ import {
 import { Gender } from '../entities/teacher.entity';
 
 export class CreateTeacherDto {
-  
   // User Information
-
 
   @IsString()
   @Length(2, 50)
@@ -35,9 +32,7 @@ export class CreateTeacherDto {
   })
   password!: string;
 
-
   // Teacher Information
-
 
   @IsString()
   @Length(3, 55)
@@ -73,4 +68,3 @@ export class CreateTeacherDto {
   @IsString()
   profileImage?: string;
 }
-

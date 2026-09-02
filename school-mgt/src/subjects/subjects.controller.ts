@@ -24,13 +24,9 @@ import { UserRole } from '../auth/entities/user.entity';
 @Controller('subjects')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SubjectsController {
-  constructor(
-    private readonly subjectsService: SubjectsService,
-  ) {}
+  constructor(private readonly subjectsService: SubjectsService) {}
 
-  
   // Create Subject
- 
 
   @Post()
   @Roles(UserRole.ADMIN)
@@ -38,9 +34,7 @@ export class SubjectsController {
     return this.subjectsService.create(dto);
   }
 
-  
   // Get All Subjects
-  
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
@@ -48,40 +42,27 @@ export class SubjectsController {
     return this.subjectsService.findAll(query);
   }
 
-  
   // Get Subject By ID
-  
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.subjectsService.findOne(id);
   }
 
-  
   // Update Subject
- 
 
   @Patch(':id')
   @Roles(UserRole.ADMIN)
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateSubjectDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSubjectDto) {
     return this.subjectsService.update(id, dto);
   }
 
- 
   // Delete Subject
-  
 
   @Delete(':id')
   @Roles(UserRole.ADMIN)
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.subjectsService.remove(id);
   }
 }

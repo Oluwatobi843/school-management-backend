@@ -10,25 +10,12 @@ import { Class } from '../classes/entities/class.entity';
 import { User } from '../auth/entities/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Attendance,
-      Student,
-      Class,
-      User,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Attendance, Student, Class, User])],
 
-  controllers: [
-    AttendanceController,
-  ],
+  controllers: [AttendanceController],
 
-  providers: [
-    AttendanceService,
-  ],
+  providers: [AttendanceService],
 
-  exports: [
-    AttendanceService,
-  ],
+  exports: [AttendanceService],
 })
-export class AttendanceModule {} 
+export class AttendanceModule {}

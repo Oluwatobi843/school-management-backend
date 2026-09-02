@@ -6,9 +6,7 @@ import { ClassesService } from './classes.service';
 import { Class } from './entities/class.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Class]),
-  ],
+  imports: [TypeOrmModule.forFeature([Class])],
   controllers: [ClassesController],
   providers: [ClassesService],
 })
