@@ -33,34 +33,29 @@ export class Attendance {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  // STUDENT
-
+  @Index()
   @ManyToOne(() => Student, {
-    eager: true,
+    eager: false,
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'studentId' })
   student!: Student;
 
-  // CLASS
-
+  @Index()
   @ManyToOne(() => Class, {
-    eager: true,
+    eager: false,
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'classId' })
   class!: Class;
 
-  // ATTENDANCE DATE
-
+  @Index()
   @Column({
     type: 'date',
   })
   date!: Date;
-
-  // STATUS
 
   @Column({
     type: 'enum',
@@ -68,25 +63,19 @@ export class Attendance {
   })
   status!: AttendanceStatus;
 
-  // REMARK
-
   @Column({
     type: 'text',
     nullable: true,
   })
   remark?: string;
 
-  // RECORDED BY
-  // ADMIN / TEACHER
-
+  @Index()
   @ManyToOne(() => User, {
-    eager: true,
+    eager: false,
     nullable: false,
   })
   @JoinColumn({ name: 'recordedById' })
   recordedBy!: User;
-
-  // EXTERNAL API INTEGRATION
 
   @Column({
     type: 'varchar',
@@ -113,8 +102,6 @@ export class Attendance {
     nullable: true,
   })
   syncError?: string;
-
-  // TIMESTAMPS
 
   @CreateDateColumn()
   createdAt!: Date;

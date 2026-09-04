@@ -5,12 +5,11 @@ import {
   Patch,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -54,16 +53,14 @@ export class AuthController {
   // Google callback
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleCallback(@Req() req: Request, @Res() res: Response) {
+  async googleCallback(@Req() req: Request) {
     const googleUser = req.user as {
       googleId: string;
       email: string;
       firstName: string;
       lastName: string;
     };
-    const result = await this.authService.googleLogin(googleUser);
-
-    return res.json(result);
+    return this.authService.googleLogin(googleUser);
   }
 
   // PROTECTED ROUTES

@@ -1,10 +1,13 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
   Unique,
 } from 'typeorm';
 
@@ -25,14 +28,16 @@ export class ParentStudent {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Parent, {
+  @Index()
+  @ManyToOne(() => Parent, (parent) => parent.parentStudents, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'parentId' })
   parent!: Parent;
 
-  @ManyToOne(() => Student, {
+  @Index()
+  @ManyToOne(() => Student, (student) => student.parentStudents, {
     nullable: false,
     onDelete: 'CASCADE',
   })
@@ -59,4 +64,10 @@ export class ParentStudent {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

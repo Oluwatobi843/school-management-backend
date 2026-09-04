@@ -29,7 +29,7 @@ export class Teacher {
   employeeId!: string;
 
   @OneToOne(() => User, (user) => user.teacher, {
-    eager: true,
+    eager: false,
   })
   @JoinColumn()
   user!: User;
@@ -67,7 +67,7 @@ export class Teacher {
   hireDate!: Date;
 
   @ManyToMany(() => Subject, (subject) => subject.teachers, {
-    eager: true,
+    eager: false,
   })
   @JoinTable({
     name: 'teacher_subjects',

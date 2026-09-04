@@ -4,9 +4,11 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ParentStudent } from './parent-student.entity';
 
 @Entity('parents')
 @Index(['email'], { unique: true })
@@ -32,6 +34,7 @@ export class Parent {
   })
   email!: string;
 
+  @Index()
   @Column({
     type: 'varchar',
     length: 30,
@@ -63,6 +66,9 @@ export class Parent {
     default: true,
   })
   isActive!: boolean;
+
+  @OneToMany(() => ParentStudent, (ps) => ps.parent)
+  parentStudents!: ParentStudent[];
 
   @CreateDateColumn()
   createdAt!: Date;

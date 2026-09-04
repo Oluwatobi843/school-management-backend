@@ -8,25 +8,31 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToOne,
+  Index,
+  OneToMany,
 } from 'typeorm';
 
 import { Class } from '../../classes/entities/class.entity';
 import { User } from '../../auth/entities/user.entity';
+import { Gender } from '../../teachers/entities/teacher.entity';
+import { ParentStudent } from '../../parents/entities/parent-student.entity';
 
 @Entity('students')
 export class Student {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Index()
   @Column({ unique: true })
   admissionNumber!: string;
 
-  @Column()
-  gender!: string;
+  @Column({ type: 'enum', enum: Gender })
+  gender!: Gender;
 
   @Column({ type: 'date' })
   dateOfBirth!: Date;
 
+  @Index()
   @ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
     nullable: true,
   })
@@ -39,9 +45,12 @@ export class Student {
   @Column({ nullable: true })
   address!: string;
 
-  @OneToOne(() => User)
+  @OneToOne((): typeof User => User, (user: User) => user.student)
   @JoinColumn()
   user!: User;
+
+  @OneToMany(() => ParentStudent, (ps) => ps.student)
+  parentStudents!: ParentStudent[];
 
   @CreateDateColumn()
   createdAt!: Date;

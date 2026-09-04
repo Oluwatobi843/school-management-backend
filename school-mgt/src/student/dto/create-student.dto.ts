@@ -9,6 +9,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { Gender } from '../../teachers/entities/teacher.entity';
 
 export class CreateStudentDto {
   @IsString()
@@ -30,10 +31,10 @@ export class CreateStudentDto {
   @MinLength(10)
   password!: string;
 
-  @IsEnum(['Male', 'Female'], {
+  @IsEnum(Gender, {
     message: 'Gender must be either Male or Female',
   })
-  gender!: string;
+  gender!: Gender;
 
   @IsDateString()
   dateOfBirth!: Date;

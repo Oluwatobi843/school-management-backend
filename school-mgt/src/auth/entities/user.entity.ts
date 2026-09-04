@@ -1,9 +1,12 @@
 import { Exclude } from 'class-transformer';
 import { Teacher } from '../../teachers/entities/teacher.entity';
+import { Student } from '../../student/entities/student.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
+  Index,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -32,6 +35,7 @@ export class User {
   @Column({ length: 100 })
   lastName!: string;
 
+  @Index()
   @Column({
     type: 'varchar',
     unique: true,
@@ -75,9 +79,15 @@ export class User {
   @OneToOne(() => Teacher, (teacher) => teacher.user)
   teacher!: Teacher;
 
+  @OneToOne(() => Student, (student) => student.user)
+  student!: Student;
+
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
