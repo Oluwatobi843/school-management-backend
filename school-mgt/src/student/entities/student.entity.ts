@@ -36,14 +36,6 @@ export class Student {
   @ManyToOne(() => Class, (schoolClass) => schoolClass.students, {
     nullable: true,
   })
-  @JoinColumn({ name: 'classId' })
-  class?: Class;
-
-  @Column({ nullable: true })
-  phoneNumber!: string;
-
-  @Column({ nullable: true })
-  address!: string;
 
   @OneToOne((): typeof User => User, (user: User) => user.student)
   @JoinColumn()
