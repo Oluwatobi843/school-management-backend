@@ -26,7 +26,7 @@ export class Student {
   @Column({ unique: true })
   admissionNumber!: string;
 
-  @Column({ type: 'enum', enum: Gender })
+  @Column({ type: 'enum', enum: Gender, nullable: true })
   gender!: Gender;
 
   @Column({ type: 'date' })
