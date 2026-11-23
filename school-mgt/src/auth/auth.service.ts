@@ -223,7 +223,6 @@ export class AuthService {
         'This account uses Google login and does not have a password.',
       );
     }
-
     const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
 
     if (!isMatch) {
