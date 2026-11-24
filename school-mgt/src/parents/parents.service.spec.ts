@@ -1,3 +1,4 @@
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
@@ -7,7 +8,10 @@ import {
 } from '@nestjs/common';
 import { ParentsService } from './parents.service';
 import { Parent } from './entities/parent.entity';
-import { ParentStudent } from './entities/parent-student.entity';
+import {
+  ParentStudent,
+  ParentRelationship,
+} from './entities/parent-student.entity';
 import { Student } from '../student/entities/student.entity';
 
 describe('ParentsService', () => {
@@ -44,7 +48,7 @@ describe('ParentsService', () => {
 
   const relationship = {
     id: 11,
-    relationship: 'Father',
+    relationship: ParentRelationship.FATHER,
     parent,
     student,
   } as unknown as ParentStudent;
@@ -64,6 +68,7 @@ describe('ParentsService', () => {
       save: jest.fn(),
       softDelete: jest.fn(),
     };
+
     parentStudentRepo = {
       findOne: jest.fn(),
       find: jest.fn(),
@@ -71,6 +76,7 @@ describe('ParentsService', () => {
       save: jest.fn(),
       remove: jest.fn(),
     };
+
     studentRepo = { findOne: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -134,6 +140,7 @@ describe('ParentsService', () => {
         take: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([[parent], 1]),
       };
+
       parentRepo.createQueryBuilder.mockReturnValue(queryBuilder);
 
       const result = await service.findAll({ page: 1, limit: 10 });
@@ -170,8 +177,9 @@ describe('ParentsService', () => {
 
     it('should throw ConflictException when email taken', async () => {
       parentRepo.findOne
-        .mockResolvedValueOnce(parent) // current parent (id 1)
-        .mockResolvedValueOnce({ ...parent, id: 2 }); // another parent already has email
+        .mockResolvedValueOnce(parent)
+        .mockResolvedValueOnce({ ...parent, id: 2 });
+
       parentRepo.save.mockResolvedValue(parent);
 
       await expect(
@@ -183,6 +191,7 @@ describe('ParentsService', () => {
       parentRepo.findOne
         .mockResolvedValueOnce(parent)
         .mockResolvedValueOnce(null);
+
       parentRepo.save.mockResolvedValue(parent);
 
       const result = await service.update(1, { firstName: 'Zoe' });
@@ -249,7 +258,10 @@ describe('ParentsService', () => {
       parentStudentRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateStudentRelationship(1, 5, { studentId: 5 }),
+        service.updateStudentRelationship(1, 5, {
+          studentId: 5,
+          relationship: ParentRelationship.MOTHER,
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -257,7 +269,10 @@ describe('ParentsService', () => {
       parentStudentRepo.findOne.mockResolvedValue(relationship);
 
       await expect(
-        service.updateStudentRelationship(1, 5, { studentId: 99 }),
+        service.updateStudentRelationship(1, 5, {
+          studentId: 99,
+          relationship: ParentRelationship.MOTHER,
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -267,11 +282,11 @@ describe('ParentsService', () => {
 
       const result = await service.updateStudentRelationship(1, 5, {
         studentId: 5,
-        relationship: 'Mother',
+        relationship: ParentRelationship.MOTHER,
         isPrimaryContact: true,
       });
 
-      expect(relationship.relationship).toBe('Mother');
+      expect(relationship.relationship).toBe(ParentRelationship.MOTHER);
       expect(result.message).toBe(
         'Parent-student relationship updated successfully.',
       );
@@ -301,18 +316,24 @@ describe('ParentsService', () => {
     it('should throw NotFoundException when parent not found', async () => {
       parentRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.linkStudent(1, { studentId: 5 })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.linkStudent(1, {
+          studentId: 5,
+          relationship: ParentRelationship.MOTHER,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when student not found', async () => {
       parentRepo.findOne.mockResolvedValue(parent);
       studentRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.linkStudent(1, { studentId: 5 })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.linkStudent(1, {
+          studentId: 5,
+          relationship: ParentRelationship.MOTHER,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ConflictException when already linked', async () => {
@@ -320,9 +341,12 @@ describe('ParentsService', () => {
       studentRepo.findOne.mockResolvedValue(student);
       parentStudentRepo.findOne.mockResolvedValue(relationship);
 
-      await expect(service.linkStudent(1, { studentId: 5 })).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.linkStudent(1, {
+          studentId: 5,
+          relationship: ParentRelationship.MOTHER,
+        }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should create and save relationship', async () => {
@@ -332,7 +356,10 @@ describe('ParentsService', () => {
       parentStudentRepo.create.mockReturnValue(relationship);
       parentStudentRepo.save.mockResolvedValue(relationship);
 
-      const result = await service.linkStudent(1, { studentId: 5 });
+      const result = await service.linkStudent(1, {
+        studentId: 5,
+        relationship: ParentRelationship.MOTHER,
+      });
 
       expect(parentStudentRepo.create).toHaveBeenCalled();
       expect(result.message).toBe('Parent linked to student successfully.');

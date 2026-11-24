@@ -1,19 +1,26 @@
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+
 import { AttendanceService } from './attendance.service';
-import { Attendance, AttendanceStatus } from './entities/attendance.entity';
+import {
+  Attendance,
+  AttendanceStatus,
+} from './entities/attendance.entity';
 import { Student } from '../student/entities/student.entity';
 import { Class } from '../classes/entities/class.entity';
 import { User, UserRole } from '../auth/entities/user.entity';
 
 describe('AttendanceService', () => {
   let service: AttendanceService;
+
   let attendanceRepository: {
     findOne: jest.Mock;
     findAndCount: jest.Mock;
@@ -22,6 +29,7 @@ describe('AttendanceService', () => {
     save: jest.Mock;
     softDelete: jest.Mock;
   };
+
   let studentRepository: { findOne: jest.Mock };
   let classRepository: { findOne: jest.Mock };
   let userRepository: { findOne: jest.Mock };
@@ -66,6 +74,7 @@ describe('AttendanceService', () => {
       save: jest.fn(),
       softDelete: jest.fn(),
     };
+
     studentRepository = { findOne: jest.fn() };
     classRepository = { findOne: jest.fn() };
     userRepository = { findOne: jest.fn() };
@@ -77,9 +86,18 @@ describe('AttendanceService', () => {
           provide: getRepositoryToken(Attendance),
           useValue: attendanceRepository,
         },
-        { provide: getRepositoryToken(Student), useValue: studentRepository },
-        { provide: getRepositoryToken(Class), useValue: classRepository },
-        { provide: getRepositoryToken(User), useValue: userRepository },
+        {
+          provide: getRepositoryToken(Student),
+          useValue: studentRepository,
+        },
+        {
+          provide: getRepositoryToken(Class),
+          useValue: classRepository,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: userRepository,
+        },
       ],
     }).compile();
 
@@ -246,9 +264,11 @@ describe('AttendanceService', () => {
     it('should throw NotFoundException when not found', async () => {
       attendanceRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update(500, { status: 'ABSENT' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update(500, {
+          status: AttendanceStatus.ABSENT,
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when new student not found', async () => {
@@ -265,7 +285,7 @@ describe('AttendanceService', () => {
       attendanceRepository.save.mockResolvedValue(attendance);
 
       const result = await service.update(500, {
-        status: 'ABSENT',
+        status: AttendanceStatus.ABSENT,
         remark: 'Sick',
       });
 

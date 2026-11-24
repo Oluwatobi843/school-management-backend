@@ -8,7 +8,10 @@ import { User, AuthProvider, UserRole } from './entities/user.entity';
 jest.mock('bcrypt');
 import * as bcrypt from 'bcrypt';
 
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+const mockedBcrypt = bcrypt as unknown as {
+  hash: jest.Mock<Promise<string>, [string, number]>;
+  compare: jest.Mock<Promise<boolean>, [string, string]>;
+};
 
 describe('AuthService', () => {
   let service: AuthService;
