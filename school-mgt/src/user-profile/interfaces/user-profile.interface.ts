@@ -1,4 +1,3 @@
-
 import { ProfileGender } from '../enums/profile-gender.enum';
 
 export interface IUserProfile {

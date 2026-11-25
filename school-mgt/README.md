@@ -25,17 +25,17 @@ The backend is intended to support authenticated school users and protect sensit
 
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js |
-| Framework | NestJS 11 |
-| Language | TypeScript 5 |
-| Database | PostgreSQL |
-| ORM | TypeORM |
+| Layer          | Technology                          |
+| -------------- | ----------------------------------- |
+| Runtime        | Node.js                             |
+| Framework      | NestJS 11                           |
+| Language       | TypeScript 5                        |
+| Database       | PostgreSQL                          |
+| ORM            | TypeORM                             |
 | Authentication | JWT / Passport-based authentication |
-| OAuth | Google authentication support |
-| Testing | Jest / Supertest |
-| Code quality | ESLint / Prettier |
+| OAuth          | Google authentication support       |
+| Testing        | Jest / Supertest                    |
+| Code quality   | ESLint / Prettier                   |
 
 ## Architecture
 

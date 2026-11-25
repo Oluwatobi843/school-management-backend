@@ -84,7 +84,7 @@ export class User {
   student!: Student;
 
   @OneToOne(() => UserProfile, (profile) => profile.user)
-profile!: UserProfile;
+  profile!: UserProfile;
 
   @CreateDateColumn()
   createdAt!: Date;

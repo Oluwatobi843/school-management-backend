@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -10,10 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { AttendanceService } from './attendance.service';
-import {
-  Attendance,
-  AttendanceStatus,
-} from './entities/attendance.entity';
+import { Attendance, AttendanceStatus } from './entities/attendance.entity';
 import { Student } from '../student/entities/student.entity';
 import { Class } from '../classes/entities/class.entity';
 import { User, UserRole } from '../auth/entities/user.entity';
