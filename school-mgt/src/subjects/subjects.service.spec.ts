@@ -117,7 +117,7 @@ describe('SubjectsService', () => {
       };
       subjectRepo.createQueryBuilder.mockReturnValue(queryBuilder);
 
-      const result = await service.findAll({ page: 1, limit: 10 });
+      const result = await service.findAll({ page: '1', limit: '10' });
 
       expect(subjectRepo.createQueryBuilder).toHaveBeenCalled();
       expect(result.meta.total).toBe(1);

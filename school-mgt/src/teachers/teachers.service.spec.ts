@@ -7,14 +7,17 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TeachersService } from './teachers.service';
-import { Teacher } from './entities/teacher.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { User, UserRole } from '../auth/entities/user.entity';
+import { Teacher, Gender } from './entities/teacher.entity';
 
 jest.mock('bcrypt');
 import * as bcrypt from 'bcrypt';
 
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+const mockedBcrypt = bcrypt as unknown as {
+  hash: jest.Mock<Promise<string>, [string, number]>;
+  compare: jest.Mock<Promise<boolean>, [string, string]>;
+};
 
 describe('TeachersService', () => {
   let service: TeachersService;
@@ -56,7 +59,7 @@ describe('TeachersService', () => {
     email: 'jane@example.com',
     password: 'password123',
     employeeId: 'T-001',
-    gender: 'Female',
+    gender: Gender.FEMALE,
     dateOfBirth: '1990-01-01',
     phone: '08012345678',
     qualification: 'BSc',
@@ -153,7 +156,7 @@ describe('TeachersService', () => {
       };
       teacherRepo.createQueryBuilder.mockReturnValue(queryBuilder);
 
-      const result = await service.findAll({ page: 1, limit: 10 });
+    const result = await service.findAll({ page: '1', limit: '10' });
 
       expect(teacherRepo.createQueryBuilder).toHaveBeenCalled();
       expect(queryBuilder.getManyAndCount).toHaveBeenCalled();

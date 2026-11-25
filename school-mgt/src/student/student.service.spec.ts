@@ -1,3 +1,4 @@
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
@@ -10,11 +11,15 @@ import { StudentService } from './student.service';
 import { Student } from './entities/student.entity';
 import { Class } from '../classes/entities/class.entity';
 import { User, UserRole } from '../auth/entities/user.entity';
+import { Gender } from '../teachers/entities/teacher.entity';
 
 jest.mock('bcrypt');
 import * as bcrypt from 'bcrypt';
 
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+const mockedBcrypt = bcrypt as unknown as {
+  hash: jest.Mock<Promise<string>, [string, number]>;
+  compare: jest.Mock<Promise<boolean>, [string, string]>;
+};
 
 describe('StudentService', () => {
   let service: StudentService;
@@ -52,7 +57,7 @@ describe('StudentService', () => {
     lastName: 'Doe',
     email: 'john@example.com',
     password: 'password123',
-    gender: 'Male',
+    gender: Gender.MALE,
     dateOfBirth: new Date('2010-01-01'),
     classId: 10,
   };
@@ -68,8 +73,10 @@ describe('StudentService', () => {
       save: jest.fn(),
       softDelete: jest.fn(),
     };
+
     userRepository = { findOne: jest.fn() };
     classRepository = { findOne: jest.fn() };
+
     dataSource = {
       transaction: jest.fn((cb: (manager: any) => Promise<unknown>) =>
         cb({
@@ -109,8 +116,9 @@ describe('StudentService', () => {
 
     it('should throw BadRequestException when email already exists', async () => {
       userRepository.findOne
-        .mockResolvedValueOnce(adminUser) // admin
-        .mockResolvedValueOnce(adminUser); // email exists
+        .mockResolvedValueOnce(adminUser)
+        .mockResolvedValueOnce(adminUser);
+
       studentRepository.findOne.mockResolvedValue(null);
 
       await expect(service.create(createDto, 1)).rejects.toThrow(
@@ -120,8 +128,9 @@ describe('StudentService', () => {
 
     it('should throw BadRequestException when admission number exists', async () => {
       userRepository.findOne
-        .mockResolvedValueOnce(adminUser) // admin
-        .mockResolvedValueOnce(null); // email free
+        .mockResolvedValueOnce(adminUser)
+        .mockResolvedValueOnce(null);
+
       studentRepository.findOne.mockResolvedValue(student);
 
       await expect(service.create(createDto, 1)).rejects.toThrow(
@@ -131,8 +140,9 @@ describe('StudentService', () => {
 
     it('should throw NotFoundException when class not found', async () => {
       userRepository.findOne
-        .mockResolvedValueOnce(adminUser) // admin
-        .mockResolvedValueOnce(null); // email free
+        .mockResolvedValueOnce(adminUser)
+        .mockResolvedValueOnce(null);
+
       studentRepository.findOne.mockResolvedValue(null);
       classRepository.findOne.mockResolvedValue(null);
 
@@ -143,10 +153,12 @@ describe('StudentService', () => {
 
     it('should create student within a transaction', async () => {
       userRepository.findOne
-        .mockResolvedValueOnce(adminUser) // admin
-        .mockResolvedValueOnce(null); // email free
+        .mockResolvedValueOnce(adminUser)
+        .mockResolvedValueOnce(null);
+
       studentRepository.findOne.mockResolvedValue(null);
       classRepository.findOne.mockResolvedValue(schoolClass);
+
       mockedBcrypt.hash.mockResolvedValue('hashed');
 
       const result = await service.create(createDto, 1);
