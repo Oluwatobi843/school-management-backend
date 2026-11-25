@@ -13,6 +13,7 @@ import { SubjectsModule } from './subjects/subjects.module';
 import { ClassesModule } from './classes/classes.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { ParentsModule } from './parents/parents.module';
+import { UserProfileModule } from './user-profile/user-profile.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ParentsModule } from './parents/parents.module';
     ClassesModule,
     AttendanceModule,
     ParentsModule,
+    UserProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

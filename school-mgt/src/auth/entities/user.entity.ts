@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Teacher } from '../../teachers/entities/teacher.entity';
 import { Student } from '../../student/entities/student.entity';
+import { UserProfile } from '../../user-profile/entities/user-profile.entity';
 import {
   Column,
   CreateDateColumn,
@@ -81,6 +82,9 @@ export class User {
 
   @OneToOne(() => Student, (student) => student.user)
   student!: Student;
+
+  @OneToOne(() => UserProfile, (profile) => profile.user)
+profile!: UserProfile;
 
   @CreateDateColumn()
   createdAt!: Date;
